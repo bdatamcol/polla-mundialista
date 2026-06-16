@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MatchStatus {
+  PENDING
+  LIVE
+  FINISHED
+}
+
+enum MatchPhase {
+  GROUP
+  ROUND_OF_16
+  QUARTER_FINAL
+  SEMI_FINAL
+  THIRD_PLACE
+  FINAL
+}
+
+model User {
+  id             String       @id @default(uuid())
+  name           String
+  email          String       @unique
+  password       String
+  role           Role         @default(USER)
+  totalPoints    Int          @default(0)
+  exactScores    Int          @default(0)
+  correctWinners Int          @default(0)
+  predictions    Prediction[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([email])
+  @@index([totalPoints])
+}
+
+model Match {
+  id             String       @id @default(uuid())
+  externalId     String?      @unique
+  homeTeam       String
+  homeTeamFull   String?
+  homeTeamFlag   String?      // Emoji de bandera
+  homeTeamCrest  String?      // URL del escudo del equipo
+  homeTeamTla    String?      // Código TLA (ej: COL, ARG)
+  homeTeamIso2   String?      // Código ISO 3166-1 alpha-2 para flagcdn
+  awayTeam       String
+  awayTeamFull   String?
+  awayTeamFlag   String?
+  awayTeamCrest  String?
+  awayTeamTla    String?
+  awayTeamIso2   String?      // Código ISO 3166-1 alpha-2 para flagcdn
+  group          String
+  phase          MatchPhase   @default(GROUP)
+  matchDate      DateTime
+  status         MatchStatus  @default(PENDING)
+  homeGoals      Int?
+  awayGoals      Int?
+  lastSyncAt     DateTime?
+  predictions    Prediction[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([matchDate])
+  @@index([status])
+  @@index([group])
+  @@index([externalId])
+  @@index([phase])
+}
+
+model Prediction {
+  id              String   @id @default(uuid())
+  userId          String
+  matchId         String
+  homeGoals       Int
+  awayGoals       Int
+  points          Int      @default(0)
+  isExactScore    Boolean  @default(false)
+  isCorrectWinner Boolean  @default(false)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match           Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, matchId])
+  @@index([userId])
+  @@index([matchId])
+}
+
+model Prize {
+  id          String   @id @default(uuid())
+  position    Int
+  title       String
+  description String
+  imageUrl    String?
+  conditions  String
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([position])
+}
+
+model PointsConfig {
+  id                  String   @id @default(uuid())
+  // Fase 1: Fase de Grupos + Octavos de final
+  groupStagePoints    Int      @default(5)
+  // Fase 2: Cuartos de final + Semifinales
+  quartersPoints      Int      @default(10)
+  // Fase 3: Final
+  finalPoints         Int      @default(15)
+  updatedAt           DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  userId    String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+}
