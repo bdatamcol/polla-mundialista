@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LogIn, Mail, Lock } from 'lucide-react'
@@ -15,6 +15,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  useLayoutEffect(() => {
+    history.scrollRestoration = 'manual'
+    const resetScroll = () => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+
+    resetScroll()
+    const frame = requestAnimationFrame(resetScroll)
+    const timeout = window.setTimeout(resetScroll, 50)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(timeout)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="bg-background flex items-center justify-center px-4 py-10 md:py-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 mb-4">
@@ -92,7 +110,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-text-secondary text-sm">
               ¿No tienes cuenta?{' '}
-              <Link href="/registro" className="text-accent hover:underline">
+              <Link href="/registro" scroll className="text-accent hover:underline">
                 Regístrate aquí
               </Link>
             </p>

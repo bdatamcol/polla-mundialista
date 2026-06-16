@@ -19,7 +19,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary: 'bg-accent text-black hover:bg-accent-light hover:scale-[1.02] hover:shadow-lg hover:shadow-accent/20 focus:ring-accent',
-      secondary: 'bg-secondary text-white hover:bg-secondary-light hover:scale-[1.02] focus:ring-secondary',
+      secondary: 'bg-primary text-white border border-accent/20 hover:bg-primary-light hover:border-accent/40 hover:scale-[1.02] focus:ring-accent',
       outline: 'border-2 border-accent text-accent hover:bg-accent hover:text-black focus:ring-accent',
       ghost: 'text-text-secondary hover:text-white hover:bg-surface-light focus:ring-surface',
       danger: 'bg-error text-white hover:bg-red-600 focus:ring-error',

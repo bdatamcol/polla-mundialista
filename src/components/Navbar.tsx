@@ -40,7 +40,7 @@ export function Navbar(props: NavbarProps) {
     : publicLinks
 
   return (
-    <nav className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur-md border-b border-surface-light">
+    <nav className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md border-b border-accent/20 shadow-lg shadow-primary-dark/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -60,7 +60,7 @@ export function Navbar(props: NavbarProps) {
                 className={cn(
                   'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   pathname === link.href
-                    ? 'bg-accent/10 text-accent'
+                    ? 'bg-accent text-black shadow-md shadow-accent/20'
                     : 'text-text-secondary hover:text-white hover:bg-surface-light'
                 )}
               >
@@ -85,7 +85,7 @@ export function Navbar(props: NavbarProps) {
                 <form action="/api/auth/logout" method="POST">
                   <button
                     type="submit"
-                    className="p-2 rounded-lg text-text-secondary hover:text-error hover:bg-error/10 transition-colors"
+                    className="p-2 rounded-lg text-text-secondary hover:text-accent hover:bg-accent/10 transition-colors"
                     title="Cerrar sesión"
                   >
                     <LogOut className="w-5 h-5" />
@@ -96,12 +96,14 @@ export function Navbar(props: NavbarProps) {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-white transition-colors"
+                  scroll
+                  className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent transition-colors"
                 >
                   Iniciar Sesión
                 </Link>
                 <Link
                   href="/registro"
+                  scroll
                   className="px-4 py-2 text-sm font-medium bg-accent text-black rounded-lg hover:bg-accent-light transition-colors"
                 >
                   Registrarse
@@ -132,7 +134,7 @@ export function Navbar(props: NavbarProps) {
                 className={cn(
                   'block px-4 py-3 rounded-lg text-base font-medium transition-colors',
                   pathname === link.href
-                    ? 'bg-accent/10 text-accent'
+                    ? 'bg-accent text-black shadow-md shadow-accent/20'
                     : 'text-text-secondary hover:text-white hover:bg-surface-light'
                 )}
               >
@@ -140,7 +142,7 @@ export function Navbar(props: NavbarProps) {
               </Link>
             ))}
           </div>
-          {user && (
+          {user ? (
             <div className="px-4 py-4 border-t border-surface-light">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
@@ -154,12 +156,31 @@ export function Navbar(props: NavbarProps) {
               <form action="/api/auth/logout" method="POST">
                 <button
                   type="submit"
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-error hover:bg-error/10 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-accent hover:bg-accent/10 rounded-lg transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Cerrar Sesión
                 </button>
               </form>
+            </div>
+          ) : (
+            <div className="px-4 py-4 border-t border-surface-light space-y-3">
+              <Link
+                href="/login"
+                scroll
+                onClick={() => setIsMenuOpen(false)}
+                className="block w-full rounded-lg border border-accent/25 px-4 py-3 text-center text-sm font-medium text-text-primary hover:bg-surface-light transition-colors"
+              >
+                Iniciar Sesión
+              </Link>
+              <Link
+                href="/registro"
+                scroll
+                onClick={() => setIsMenuOpen(false)}
+                className="block w-full rounded-lg bg-accent px-4 py-3 text-center text-sm font-medium text-black hover:bg-accent-light transition-colors"
+              >
+                Registrarse
+              </Link>
             </div>
           )}
         </div>
