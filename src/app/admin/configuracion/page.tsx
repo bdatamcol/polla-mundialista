@@ -133,14 +133,6 @@ export default function ConfiguracionPage() {
           <p className="text-text-secondary text-sm mb-4">
             Recalcula todos los puntos de todos los usuarios con la nueva configuración. Útil después de cambiar los valores.
           </p>
-          <form action={async () => {
-            'use server'
-            // This would call recalculateAllPoints
-          }}>
-            <Button variant="outline" type="submit">
-              Recalcular Todos los Puntos
-            </Button>
-          </form>
         </Card>
       </div>
     </div>

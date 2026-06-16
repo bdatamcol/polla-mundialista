@@ -63,7 +63,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID required' }, { status: 400 })
     }
 
-    const result = await deleteMatchAdmin(id)
+    const result = await deleteMatchAdmin(id) || {} as { success: boolean; error?: string }
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 })

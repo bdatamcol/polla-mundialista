@@ -11,7 +11,8 @@ interface NavbarProps {
   user?: UserType | null
 }
 
-export function Navbar({ user }: NavbarProps) {
+export function Navbar(props: NavbarProps) {
+  const { user } = props
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 

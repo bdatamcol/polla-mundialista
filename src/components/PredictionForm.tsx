@@ -31,8 +31,8 @@ export function PredictionForm({ match, existingPrediction }: PredictionFormProp
     setError('')
     setIsLoading(true)
 
-    const home = parseInt(homeGoals)
-    const away = parseInt(awayGoals)
+    const home = Number(homeGoals)
+    const away = Number(awayGoals)
 
     if (isNaN(home) || isNaN(away) || home < 0 || away < 0) {
       setError('Ingresa marcadores válidos')
