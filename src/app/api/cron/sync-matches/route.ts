@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { getWorldCupMatches, mapFootballMatchToMatch } from '@/lib/football-api'
 import { revalidatePath } from 'next/cache'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 /**
  * Endpoint para sincronización externa (cron-job.org, EasyCron, etc.)
  * GET /api/cron/sync-matches?secret=TU_SECRETO
