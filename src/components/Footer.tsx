@@ -17,7 +17,6 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-text-secondary text-sm max-w-md">
-              Participa en laquiniela más emocionate del Mundial 2026. 
               Predice los resultados, acumula puntos y gana increíbles premios.
             </p>
           </div>

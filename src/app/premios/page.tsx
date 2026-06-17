@@ -14,11 +14,10 @@ export default async function PremiosPage() {
             <Award className="w-8 h-8 text-accent" />
           </div>
           <h1 className="font-display text-4xl md:text-5xl text-white mb-4">
-            PREMIOS <span className="text-accent">INCREDIBLES</span>
+            PREMIOS <span className="text-accent">increíbles</span>
           </h1>
           <p className="text-text-secondary max-w-xl mx-auto">
-            Los mejores predictores se llevará estos fantásticos premios. 
-            ¡Asegura tu lugar en el podium!
+            Los mejores se llevarán estos fantásticos premios.
           </p>
         </div>
 
