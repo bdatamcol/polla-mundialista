@@ -3,6 +3,18 @@ import { z } from 'zod'
 export const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   email: z.string().email('Email inválido'),
+  cedula: z
+    .string()
+    .min(5, 'La cédula debe tener al menos 5 caracteres')
+    .max(20, 'La cédula es demasiado larga')
+    .regex(/^[0-9A-Za-z.\-]+$/, 'La cédula solo puede contener números, letras, puntos y guiones')
+    .transform((val) => val.trim()),
+  parentesco: z
+    .string()
+    .max(80, 'El parentesco es demasiado largo')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.trim().length > 0 ? val.trim() : null)),
   password: z
     .string()
     .min(8, 'La contraseña debe tener al menos 8 caracteres')

@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { UserPlus, Mail, Lock, User, Check } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, Check, IdCard, Users } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +12,8 @@ import { registerUser } from '@/actions/auth-actions'
 export default function RegistroPage() {
   const router = useRouter()
   const [name, setName] = useState('')
+  const [cedula, setCedula] = useState('')
+  const [parentesco, setParentesco] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -55,6 +57,8 @@ export default function RegistroPage() {
 
     const result = await registerUser({
       name,
+      cedula,
+      parentesco: parentesco || null,
       email,
       password,
       termsAccepted,
@@ -98,6 +102,34 @@ export default function RegistroPage() {
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
                   required
+                />
+              </div>
+
+              <div className="relative">
+                <IdCard className="absolute left-3 top-3/4 -translate-y-3/4 w-5 h-5 text-text-secondary" />
+                <Input
+                  type="text"
+                  label="Cédula"
+                  placeholder="1234567890"
+                  value={cedula}
+                  onChange={(e) => setCedula(e.target.value)}
+                  className="pl-10"
+                  required
+                  minLength={5}
+                  maxLength={20}
+                />
+              </div>
+
+              <div className="relative">
+                <Users className="absolute left-3 top-3/4 -translate-y-3/4 w-5 h-5 text-text-secondary" />
+                <Input
+                  type="text"
+                  label="Parentesco / Relación (opcional)"
+                  placeholder="Ej: Titular, Cónyuge, Hijo, Familiar..."
+                  value={parentesco}
+                  onChange={(e) => setParentesco(e.target.value)}
+                  className="pl-10"
+                  maxLength={80}
                 />
               </div>
 

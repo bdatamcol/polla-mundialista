@@ -32,6 +32,10 @@ model User {
   name                String
   email               String                @unique
   password            String
+  // Cédula del participante (única para evitar registros duplicados)
+  cedula              String                @unique
+  // Parentesco / relación con Town Center (campo libre)
+  parentesco          String?
   role                Role                  @default(USER)
   totalPoints         Int                   @default(0)
   exactScores         Int                   @default(0)
@@ -43,6 +47,7 @@ model User {
   updatedAt           DateTime              @updatedAt
 
   @@index([email])
+  @@index([cedula])
   @@index([totalPoints])
 }
 

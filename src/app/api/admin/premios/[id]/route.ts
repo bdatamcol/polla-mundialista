@@ -50,8 +50,8 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
 
   try {
     const result = await deletePrize(params.id)
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 })
+    if (!result?.success) {
+      return NextResponse.json({ error: result?.error || 'Error al eliminar premio' }, { status: 400 })
     }
     return NextResponse.json({ success: true })
   } catch (error) {
