@@ -1,18 +1,14 @@
 import Link from 'next/link'
-import { Trophy, Users, Gift, TrendingUp, Calendar, Clock, ArrowRight, Star } from 'lucide-react'
+import { Trophy, Users, Gift, TrendingUp, Calendar, Clock, ArrowRight, Star, Target } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { CountdownSimple } from '@/components/Countdown'
 import { RankingTable } from '@/components/RankingTable'
 import { getTopUsers } from '@/actions/user-actions'
 import { getNextMatch } from '@/actions/match-actions'
-import { maybeLazySyncResults } from '@/lib/lazy-sync'
 import { formatDateTime } from '@/lib/utils'
 
 export default async function HomePage() {
-  // Disparar lazy sync en background (no bloquea la página)
-  maybeLazySyncResults().catch(() => {})
-
   const [topUsers, nextMatch] = await Promise.all([
     getTopUsers(5),
     getNextMatch(),
@@ -125,52 +121,62 @@ export default async function HomePage() {
       </section>
 
       {/* Points System */}
-        <section className="py-16 bg-surface-dark">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-4">
-              SISTEMA DE <span className="text-accent">PUNTOS</span>
-            </h2>
-            <p className="text-center text-text-secondary mb-12 max-w-2xl mx-auto">
-              Solo se otorgan puntos si aciertas el marcador exacto. A mayor fase, mayor la recompensa.
-            </p>
+      <section className="py-16 bg-surface-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-4">
+            SISTEMA DE <span className="text-accent">PUNTOS</span>
+          </h2>
+          <p className="text-center text-text-secondary mb-12 max-w-2xl mx-auto">
+            Predice los marcadores exactos y a los finalistas. Cada acierto se premia.
+          </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <Card className="text-center border-success/30">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
-                  <span className="text-2xl font-mono font-bold text-success">5</span>
-                </div>
-                <CardTitle className="text-success mb-2">Fase 1</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Grupos + Octavos de final
-                </p>
-              </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <Card className="text-center border-success/30">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
+                <Target className="w-8 h-8 text-success" />
+              </div>
+              <p className="font-mono text-3xl font-bold text-success mb-2">5 pts</p>
+              <p className="text-text-secondary text-sm">
+                Por partido
+              </p>
+              <p className="text-xs text-text-secondary mt-1">
+                Acertar marcador exacto
+              </p>
+            </Card>
 
-              <Card className="text-center border-primary/30">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-2xl font-mono font-bold text-primary-light">10</span>
-                </div>
-                <CardTitle className="text-primary-light mb-2">Fase 2</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Cuartos + Semifinales
-                </p>
-              </Card>
+            <Card className="text-center border-primary/30">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-primary-light" />
+              </div>
+              <p className="font-mono text-3xl font-bold text-primary-light mb-2">10 pts</p>
+              <p className="text-text-secondary text-sm">
+                Por semifinalista
+              </p>
+              <p className="text-xs text-text-secondary mt-1">
+                Por cada equipo correcto (4)
+              </p>
+            </Card>
 
-              <Card className="text-center border-accent/30 glow-accent">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Star className="w-8 h-8 text-accent" />
-                </div>
-                <CardTitle className="text-accent mb-2">15 Puntos</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Final
-                </p>
-              </Card>
-            </div>
-
-            <p className="text-center text-text-secondary text-sm mt-8 max-w-2xl mx-auto">
-              <strong className="text-white">Regla:</strong> Si fallas el marcador, no sumas puntos. Solo se premia el acierto exacto.
-            </p>
+            <Card className="text-center border-accent/30 glow-accent">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                <Star className="w-8 h-8 text-accent" />
+              </div>
+              <p className="font-mono text-3xl font-bold text-accent mb-2">20 pts</p>
+              <p className="text-text-secondary text-sm">
+                Por finalista
+              </p>
+              <p className="text-xs text-text-secondary mt-1">
+                Por cada equipo correcto (2)
+              </p>
+            </Card>
           </div>
-        </section>
+
+          <p className="text-center text-text-secondary text-sm mt-8 max-w-2xl mx-auto">
+            <strong className="text-white">Importante:</strong> Si fallas el marcador de un partido, no sumas puntos.
+            Para finalistas, sumas por cada equipo correctamente seleccionado.
+          </p>
+        </div>
+      </section>
 
       {/* Top Ranking Preview */}
       <section className="py-16 bg-background">

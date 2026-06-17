@@ -28,20 +28,50 @@ enum MatchPhase {
 }
 
 model User {
-  id             String       @id @default(uuid())
-  name           String
-  email          String       @unique
-  password       String
-  role           Role         @default(USER)
-  totalPoints    Int          @default(0)
-  exactScores    Int          @default(0)
-  correctWinners Int          @default(0)
-  predictions    Prediction[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                  String                @id @default(uuid())
+  name                String
+  email               String                @unique
+  password            String
+  role                Role                  @default(USER)
+  totalPoints         Int                   @default(0)
+  exactScores         Int                   @default(0)
+  correctWinners      Int                   @default(0)
+  finalistPoints      Int                   @default(0)
+  predictions         Prediction[]
+  finalistPrediction  FinalistPrediction?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 
   @@index([email])
   @@index([totalPoints])
+}
+
+// Predicción de finalistas: el usuario elige qué 4 equipos llegan a
+// semifinal y qué 2 equipos llegan a la final.
+model FinalistPrediction {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 4 selecciones para semifinalistas (códigos TLA, ej: "ARG", "BRA")
+  semifinalist1   String?
+  semifinalist2   String?
+  semifinalist3   String?
+  semifinalist4   String?
+
+  // 2 selecciones para finalistas (códigos TLA)
+  finalist1       String?
+  finalist2       String?
+
+  // Puntos calculados automáticamente
+  semifinalPoints Int      @default(0)
+  finalPoints     Int      @default(0)
+  totalPoints     Int      @default(0)
+  semisCorrect    Int      @default(0)
+  finalsCorrect   Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Match {
@@ -112,12 +142,12 @@ model Prize {
 
 model PointsConfig {
   id                  String   @id @default(uuid())
-  // Fase 1: Fase de Grupos + Octavos de final
-  groupStagePoints    Int      @default(5)
-  // Fase 2: Cuartos de final + Semifinales
-  quartersPoints      Int      @default(10)
-  // Fase 3: Final
-  finalPoints         Int      @default(15)
+  // Puntos por acertar marcador exacto en un partido (uniforme para todas las fases)
+  matchPoints         Int      @default(5)
+  // Puntos por selección correcta a semifinal
+  semifinalistPoints  Int      @default(10)
+  // Puntos por selección correcta a final
+  finalistPoints      Int      @default(20)
   updatedAt           DateTime @updatedAt
 }
 

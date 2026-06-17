@@ -46,9 +46,9 @@ export const prizeSchema = z.object({
 })
 
 export const pointsConfigSchema = z.object({
-  groupStagePoints: z.number().int().min(0, 'Mínimo 0 puntos'),
-  quartersPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
-  finalPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
+  matchPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
+  semifinalistPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
+  finalistPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

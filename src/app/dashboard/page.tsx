@@ -9,6 +9,7 @@ import { MatchCard } from '@/components/MatchCard'
 import { CountdownSimple } from '@/components/Countdown'
 import { getCurrentUser } from '@/lib/auth'
 import { maybeLazySyncResults } from '@/lib/lazy-sync'
+import { getMyFinalistPrediction, isFinalistPredictionLocked } from '@/actions/finalist-actions'
 import { getUserPosition } from '@/actions/user-actions'
 import { getPredictionStats } from '@/actions/prediction-actions'
 import { getMatches, getNextMatch } from '@/actions/match-actions'
@@ -37,12 +38,14 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const [position, stats, nextMatch, topUsers, predictions] = await Promise.all([
+  const [position, stats, nextMatch, topUsers, predictions, finalistPred, finalistLocked] = await Promise.all([
     getUserPosition(user.id),
     getPredictionStats(user.id),
     getNextMatch(),
     getTopUsers(5),
     getUserPredictions(user.id),
+    getMyFinalistPrediction(),
+    isFinalistPredictionLocked(),
   ])
 
   // Get upcoming matches without predictions
@@ -51,7 +54,7 @@ export default async function DashboardPage() {
     .filter((match) => {
       const now = new Date()
       return new Date(match.matchDate) > now && 
-        !predictions.some((p) => p.matchId === match.id)
+        !predictions.some((p: any) => p.matchId === match.id)
     })
     .slice(0, 3)
 
@@ -146,6 +149,46 @@ export default async function DashboardPage() {
             )}
 
             {/* Pending Predictions */}
+            {/* Finalist Prediction Banner */}
+            <section className="mb-6">
+              <Link href="/predicciones/finalistas">
+                <Card className={`cursor-pointer hover:border-accent/50 transition-all ${
+                  finalistPred
+                    ? 'border-success/30 bg-success/5'
+                    : 'border-accent/30 bg-accent/5'
+                }`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      finalistPred ? 'bg-success/20' : 'bg-accent/20'
+                    }`}>
+                      {finalistLocked ? (
+                        <Trophy className="w-7 h-7 text-text-secondary" />
+                      ) : finalistPred ? (
+                        <Trophy className="w-7 h-7 text-success" />
+                      ) : (
+                        <Star className="w-7 h-7 text-accent" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-display text-lg text-white">PREDICCIÓN DE FINALISTAS</h3>
+                        {finalistLocked && <Badge variant="default">Cerrado</Badge>}
+                        {finalistPred && !finalistLocked && <Badge variant="success">Completa</Badge>}
+                      </div>
+                      <p className="text-text-secondary text-sm mt-1">
+                        {finalistLocked
+                          ? 'Las predicciones están cerradas. Espera a que se calculen los puntos.'
+                          : finalistPred
+                          ? `Ya tienes tu predicción: ${finalistPred.semifinalPoints + finalistPred.finalPoints} pts calculados`
+                          : 'Elige los 4 semifinalistas y los 2 finalistas. Hasta 80 pts extra.'}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-text-secondary flex-shrink-0" />
+                  </div>
+                </Card>
+              </Link>
+            </section>
+
             {pendingMatchesWithoutPrediction.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-4">
@@ -186,7 +229,7 @@ export default async function DashboardPage() {
                   </Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {predictions.slice(0, 4).map((prediction) => (
+                  {predictions.slice(0, 4).map((prediction: any) => (
                     <MatchCard
                       key={prediction.id}
                       match={prediction.match}

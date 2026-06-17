@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getWorldCupMatches, getLiveMatches, mapFootballMatchToMatch } from '@/lib/football-api'
 import { calculatePredictionPoints, DEFAULT_POINTS_CONFIG } from '@/lib/points'
+import { recalculateFinalistPoints } from '@/actions/finalist-actions'
 
 // GET /api/sync/results - Actualiza resultados desde football-data.org
 // Este endpoint debería llamarse cada 1-5 minutos durante partidos en vivo
@@ -97,7 +98,9 @@ export async function GET() {
             prediction.awayGoals,
             matchData.homeGoals!,
             matchData.awayGoals!,
-            pointsConfigForCalc,
+            { matchPoints: pointsConfigForCalc.groupStagePoints, 
+              semifinalistPoints: pointsConfigForCalc.quartersPoints, 
+              finalistPoints: pointsConfigForCalc.finalPoints },
             existingMatch.phase
           )
 
@@ -149,11 +152,30 @@ export async function GET() {
       })
     }
 
+    // Si se actualizó algún partido de cuartos o semis, recalcular puntos de finalistas
+    const knockoutUpdated = results.matches.some((m) => {
+      return m.id && (m.status === 'FINISHED')
+    })
+
+    let finalistResult: Awaited<ReturnType<typeof recalculateFinalistPoints>> | null = null
+    // Solo recalcular si hubo cambios de estado de cuartos/semis/final
+    const phaseChanged = await prisma.match.findFirst({
+      where: {
+        status: 'FINISHED',
+        phase: { in: ['QUARTER_FINAL', 'SEMI_FINAL', 'FINAL'] },
+        lastSyncAt: { gte: new Date(Date.now() - 5 * 60 * 1000) }, // actualizado en los últimos 5 min
+      },
+    })
+
+    if (phaseChanged) {
+      finalistResult = await recalculateFinalistPoints()
+    }
+
     // Log de auditoría
     await prisma.auditLog.create({
       data: {
         action: 'SYNC_RESULTS',
-        details: { results },
+        details: { results, finalistResult },
       },
     })
 
