@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { getCurrentUser, isAdmin } from '@/lib/auth'
-import { getPrizes, deletePrize } from '@/actions/admin-actions'
+import { getAllPrizesAdmin, deletePrize } from '@/actions/admin-actions'
 
 export default async function AdminPremiosPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login')
   if (!(await isAdmin())) redirect('/dashboard')
 
-  const prizes = await getPrizes()
+  const prizes = await getAllPrizesAdmin()
 
   return (
     <div className="min-h-screen bg-background py-8">

@@ -67,12 +67,20 @@ export async function registerUser(data: RegisterInput) {
     return { success: false, error: validation.error.errors[0].message }
   }
 
-  const existingUser = await prisma.user.findUnique({
+  const existingEmail = await prisma.user.findUnique({
     where: { email: data.email },
   })
 
-  if (existingUser) {
+  if (existingEmail) {
     return { success: false, error: 'Este correo ya está registrado' }
+  }
+
+  const existingCedula = await prisma.user.findUnique({
+    where: { cedula: data.cedula },
+  })
+
+  if (existingCedula) {
+    return { success: false, error: 'Ya existe un usuario registrado con esta cédula' }
   }
 
   const hashedPassword = await hashPassword(data.password)
@@ -81,6 +89,8 @@ export async function registerUser(data: RegisterInput) {
     data: {
       name: data.name,
       email: data.email,
+      cedula: data.cedula,
+      parentesco: data.parentesco ?? null,
       password: hashedPassword,
     },
   })

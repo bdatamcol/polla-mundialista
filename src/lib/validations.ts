@@ -3,6 +3,18 @@ import { z } from 'zod'
 export const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   email: z.string().email('Email inválido'),
+  cedula: z
+    .string()
+    .min(5, 'La cédula debe tener al menos 5 caracteres')
+    .max(20, 'La cédula es demasiado larga')
+    .regex(/^[0-9A-Za-z.\-]+$/, 'La cédula solo puede contener números, letras, puntos y guiones')
+    .transform((val) => val.trim()),
+  parentesco: z
+    .string()
+    .max(80, 'El parentesco es demasiado largo')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.trim().length > 0 ? val.trim() : null)),
   password: z
     .string()
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
@@ -40,15 +52,22 @@ export const prizeSchema = z.object({
   position: z.number().int().min(1),
   title: z.string().min(1, 'Título requerido'),
   description: z.string().min(1, 'Descripción requerida'),
-  imageUrl: z.string().url().optional().nullable(),
+  imageUrl: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.trim().length > 0 ? val : null))
+    .refine((val) => val === null || /^https?:\/\/.+/.test(val), {
+      message: 'URL de imagen inválida',
+    }),
   conditions: z.string().min(1, 'Condiciones requeridas'),
   isPublished: z.boolean().default(true),
 })
 
 export const pointsConfigSchema = z.object({
-  groupStagePoints: z.number().int().min(0, 'Mínimo 0 puntos'),
-  quartersPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
-  finalPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
+  matchPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
+  semifinalistPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
+  finalistPoints: z.number().int().min(0, 'Mínimo 0 puntos'),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

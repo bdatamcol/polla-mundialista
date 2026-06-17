@@ -26,17 +26,31 @@ export default function NuevoPremioPage() {
     setIsLoading(true)
 
     try {
+      // Construir payload con tipos correctos para Zod
+      const payload = {
+        position: parseInt(formData.position, 10),
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        imageUrl: formData.imageUrl.trim() ? formData.imageUrl.trim() : null,
+        conditions: formData.conditions.trim(),
+        isPublished: formData.isPublished,
+      }
+
       const res = await fetch('/api/admin/premios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       if (res.ok) {
         router.push('/admin/premios')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        alert(data.error || 'Error al crear el premio')
       }
     } catch (error) {
       console.error(error)
+      alert('Error de conexión')
     } finally {
       setIsLoading(false)
     }

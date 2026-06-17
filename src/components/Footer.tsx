@@ -55,10 +55,10 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-accent/20 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-text-secondary text-sm">
-            © {currentYear} Town Center. Todos los derechos reservados.
+            © {currentYear} TownCenter. Todos los derechos reservados.
           </p>
           <p className="text-text-secondary text-sm flex items-center gap-1">
-            Hecho con <Heart className="w-4 h-4 text-accent" /> para los aficionados
+            Hecho con <Heart className="w-4 h-4 text-accent" /> para los aficionados by <a className="text-accent hover:text-accent/80 transition-colors" href="https://bdatam.com/nuestro-equipo#1" target="_blank" rel="noopener noreferrer">Bdatam</a>
           </p>
         </div>
       </div>

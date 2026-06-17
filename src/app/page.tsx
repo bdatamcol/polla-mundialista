@@ -154,22 +154,26 @@ export default async function HomePage() {
                 </p>
               </Card>
 
-              <Card className="text-center border-accent/30 glow-accent">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Star className="w-8 h-8 text-accent" />
-                </div>
-                <CardTitle className="text-accent mb-2">15 Puntos</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Final
-                </p>
-              </Card>
-            </div>
-
-            <p className="text-center text-text-secondary text-sm mt-8 max-w-2xl mx-auto">
-              <strong className="text-white">Regla:</strong> Si fallas el marcador, no sumas puntos. Solo se premia el acierto exacto.
-            </p>
+            <Card className="text-center border-accent/30 glow-accent">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                <Star className="w-8 h-8 text-accent" />
+              </div>
+              <p className="font-mono text-3xl font-bold text-accent mb-2">20 pts</p>
+              <p className="text-text-secondary text-sm">
+                Por finalista
+              </p>
+              <p className="text-xs text-text-secondary mt-1">
+                Por cada equipo correcto (2)
+              </p>
+            </Card>
           </div>
-        </section>
+
+          <p className="text-center text-text-secondary text-sm mt-8 max-w-2xl mx-auto">
+            <strong className="text-white">Importante:</strong> Si fallas el marcador de un partido, no sumas puntos.
+            Para finalistas, sumas por cada equipo correctamente seleccionado.
+          </p>
+        </div>
+      </section>
 
       {/* Top Ranking Preview */}
       <section className="py-16 bg-gradient-to-b from-background via-background to-background-dark">

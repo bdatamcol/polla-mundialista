@@ -37,9 +37,9 @@ export async function loadResults(
   }
 
   const pointsConfig = {
-    groupStagePoints: config.groupStagePoints,
-    quartersPoints: config.quartersPoints,
-    finalPoints: config.finalPoints,
+    matchPoints: config.matchPoints,
+    semifinalistPoints: config.semifinalistPoints,
+    finalistPoints: config.finalistPoints,
   }
 
   // Calculate points for all predictions
@@ -335,6 +335,26 @@ export async function getPrizes() {
   })
 }
 
+export async function getPrizeById(id: string) {
+  const admin = await isAdmin()
+  if (!admin) {
+    return null
+  }
+  return prisma.prize.findUnique({
+    where: { id },
+  })
+}
+
+export async function getAllPrizesAdmin() {
+  const admin = await isAdmin()
+  if (!admin) {
+    return []
+  }
+  return prisma.prize.findMany({
+    orderBy: { position: 'asc' },
+  })
+}
+
 export async function getPointsConfig() {
   let config = await prisma.pointsConfig.findFirst()
   if (!config) {
@@ -346,9 +366,9 @@ export async function getPointsConfig() {
 }
 
 export async function updatePointsConfig(data: {
-  groupStagePoints: number
-  quartersPoints: number
-  finalPoints: number
+  matchPoints: number
+  semifinalistPoints: number
+  finalistPoints: number
 }) {
   const admin = await isAdmin()
   if (!admin) {
@@ -409,9 +429,9 @@ export async function recalculateAllPoints() {
 
   const config = await getPointsConfig()
   const pointsConfig = {
-    groupStagePoints: config.groupStagePoints,
-    quartersPoints: config.quartersPoints,
-    finalPoints: config.finalPoints,
+    matchPoints: config.matchPoints,
+    semifinalistPoints: config.semifinalistPoints,
+    finalistPoints: config.finalistPoints,
   }
 
   for (const match of finishedMatches) {

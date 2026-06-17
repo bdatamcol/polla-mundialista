@@ -12,9 +12,9 @@ export default function ConfiguracionPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [config, setConfig] = useState({
-    groupStagePoints: '5',
-    quartersPoints: '10',
-    finalPoints: '15',
+    matchPoints: '5',
+    semifinalistPoints: '10',
+    finalistPoints: '20',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,9 +26,9 @@ export default function ConfiguracionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          groupStagePoints: parseInt(config.groupStagePoints),
-          quartersPoints: parseInt(config.quartersPoints),
-          finalPoints: parseInt(config.finalPoints),
+          matchPoints: parseInt(config.matchPoints),
+          semifinalistPoints: parseInt(config.semifinalistPoints),
+          finalistPoints: parseInt(config.finalistPoints),
         }),
       })
 
@@ -37,6 +37,24 @@ export default function ConfiguracionPage() {
       }
     } catch (error) {
       console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleRecalculate = async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/admin/recalculate-points', { method: 'POST' })
+      if (res.ok) {
+        router.refresh()
+        alert('Puntos recalculados con éxito')
+      } else {
+        alert('Error al recalcular puntos')
+      }
+    } catch (error) {
+      console.error(error)
+      alert('Error de conexión')
     } finally {
       setIsLoading(false)
     }
@@ -55,49 +73,49 @@ export default function ConfiguracionPage() {
             CONFIGURACIÓN DE <span className="text-accent">PUNTOS</span>
           </h2>
           <p className="text-text-secondary text-sm mb-6">
-            Define cuántos puntos se otorgan por acertar el marcador exacto en cada fase del torneo.
+            Define los puntos que se otorgan por acertar en los diferentes tipos de predicción.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
                 type="number"
-                label="Fase 1: Grupos + Octavos de final"
+                label="Partidos: marcador exacto"
                 min={0}
-                value={config.groupStagePoints}
-                onChange={(e) => setConfig({ ...config, groupStagePoints: e.target.value })}
+                value={config.matchPoints}
+                onChange={(e) => setConfig({ ...config, matchPoints: e.target.value })}
                 required
               />
               <p className="text-xs text-text-secondary mt-1 ml-1">
-                Puntos por acertar marcador exacto
+                Puntos por acertar el marcador exacto de un partido
               </p>
             </div>
 
             <div>
               <Input
                 type="number"
-                label="Fase 2: Cuartos + Semifinales"
+                label="Semifinalistas: por selección correcta"
                 min={0}
-                value={config.quartersPoints}
-                onChange={(e) => setConfig({ ...config, quartersPoints: e.target.value })}
+                value={config.semifinalistPoints}
+                onChange={(e) => setConfig({ ...config, semifinalistPoints: e.target.value })}
                 required
               />
               <p className="text-xs text-text-secondary mt-1 ml-1">
-                Puntos por acertar marcador exacto
+                Puntos por cada equipo que aciertes en semifinales (4 selecciones)
               </p>
             </div>
 
             <div>
               <Input
                 type="number"
-                label="Fase 3: Final"
+                label="Finalistas: por selección correcta"
                 min={0}
-                value={config.finalPoints}
-                onChange={(e) => setConfig({ ...config, finalPoints: e.target.value })}
+                value={config.finalistPoints}
+                onChange={(e) => setConfig({ ...config, finalistPoints: e.target.value })}
                 required
               />
               <p className="text-xs text-text-secondary mt-1 ml-1">
-                Puntos por acertar marcador exacto
+                Puntos por cada equipo que aciertes en la final (2 selecciones)
               </p>
             </div>
 
@@ -105,11 +123,12 @@ export default function ConfiguracionPage() {
               <Info className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
               <div className="text-text-secondary text-sm">
                 <p className="mb-2">
-                  <strong className="text-white">Regla:</strong> Solo se otorgan puntos si aciertas
-                  el marcador exacto. Si fallas, no sumas puntos.
+                  <strong className="text-white">Reglas:</strong> Solo se otorgan puntos si aciertas
+                  el marcador EXACTO de un partido. Para finalistas, sumas puntos por cada equipo
+                  correctamente seleccionado.
                 </p>
                 <p>
-                  A mayor fase, mayor la recompensa. La final vale el triple que un partido de grupos.
+                  Máximo posible: 104 partidos × 5 pts + 40 pts semis + 40 pts final = 600 pts
                 </p>
               </div>
             </div>
@@ -131,8 +150,11 @@ export default function ConfiguracionPage() {
             Recalcular Puntos
           </h3>
           <p className="text-text-secondary text-sm mb-4">
-            Recalcula todos los puntos de todos los usuarios con la nueva configuración. Útil después de cambiar los valores.
+            Recalcula todos los puntos de partidos y finalistas con la nueva configuración. Útil después de cambiar los valores.
           </p>
+          <Button variant="outline" type="button" onClick={handleRecalculate} isLoading={isLoading}>
+            Recalcular Todos los Puntos
+          </Button>
         </Card>
       </div>
     </div>
