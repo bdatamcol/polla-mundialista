@@ -64,7 +64,30 @@ export default async function ReglamentoPage() {
             </Card>
           </section>
 
-          {/* Section 2: Sistema de puntos */}
+          {/* Section 2: Participación familiar */}
+          <section>
+            <h2 className="font-display text-2xl text-accent mb-4 flex items-center gap-2">
+              <Users className="w-6 h-6" />
+              Participación familiar
+            </h2>
+            <Card>
+              <p className="text-text-secondary mb-4">
+                Tu familia también puede participar de esta actividad, pero solo bajo las siguientes condiciones:
+              </p>
+              <ol className="space-y-3 text-text-secondary">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-sm font-bold">1</span>
+                  <span>Cónyuge, padres, hermanos e hijos.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-sm font-bold">2</span>
+                  <span>Demostrar parentesco para reclamar el obsequio. En caso de resultar ganador</span>
+                </li>
+              </ol>
+            </Card>
+          </section>
+
+          {/* Section 3: Sistema de puntos */}
           <section>
             <h2 className="font-display text-2xl text-accent mb-4 flex items-center gap-2">
               <Trophy className="w-6 h-6" />
@@ -142,7 +165,7 @@ export default async function ReglamentoPage() {
             </Card>
           </section>
 
-          {/* Section 3: Premios */}
+          {/* Section 4: Premios */}
           <section>
             <h2 className="font-display text-2xl text-accent mb-4 flex items-center gap-2">
               <Award className="w-6 h-6" />
@@ -207,7 +230,7 @@ export default async function ReglamentoPage() {
             )}
           </section>
 
-          {/* Section 4: Fechas límite */}
+          {/* Section 5: Fechas límite */}
           <section>
             <h2 className="font-display text-2xl text-accent mb-4 flex items-center gap-2">
               <Calendar className="w-6 h-6" />
@@ -242,7 +265,7 @@ export default async function ReglamentoPage() {
             </Card>
           </section>
 
-          {/* Section 5: Criterios de desempate */}
+          {/* Section 6: Criterios de desempate */}
           <section>
             <h2 className="font-display text-2xl text-accent mb-4 flex items-center gap-2">
               <Star className="w-6 h-6" />
@@ -273,7 +296,7 @@ export default async function ReglamentoPage() {
             </Card>
           </section>
 
-          {/* Section 6: Consideraciones */}
+          {/* Section 7: Consideraciones */}
           <section>
             <h2 className="font-display text-2xl text-accent mb-4 flex items-center gap-2">
               <AlertCircle className="w-6 h-6" />
