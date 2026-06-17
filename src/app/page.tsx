@@ -2,8 +2,10 @@ import Link from 'next/link'
 import { Trophy, Users, Gift, TrendingUp, Clock, ArrowRight, Star } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { PrizeCard } from '@/components/PrizeCard'
 import { RankingTable } from '@/components/RankingTable'
 import { UpcomingMatchHero } from '@/components/UpcomingMatchHero'
+import { getPrizes } from '@/actions/admin-actions'
 import { getTopUsers } from '@/actions/user-actions'
 import { getNextMatch } from '@/actions/match-actions'
 import { getCurrentUser } from '@/lib/auth'
@@ -13,10 +15,11 @@ export default async function HomePage() {
   // Disparar lazy sync en background (no bloquea la página)
   maybeLazySyncResults().catch(() => {})
 
-  const [topUsers, nextMatch, user] = await Promise.all([
+  const [topUsers, nextMatch, user, prizes] = await Promise.all([
     getTopUsers(5),
     getNextMatch(),
     getCurrentUser(),
+    getPrizes(),
   ])
 
   return (
@@ -123,55 +126,46 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Points System */}
-        <section className="py-16 bg-gradient-to-b from-background to-surface-dark">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-4">
-              SISTEMA DE <span className="text-accent">PUNTOS</span>
-            </h2>
-            <p className="text-center text-text-secondary mb-12 max-w-2xl mx-auto">
-              Solo se otorgan puntos si aciertas el marcador exacto. A mayor fase, mayor la recompensa.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <Card className="text-center border-accent/30">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <span className="text-2xl font-mono font-bold text-accent">5</span>
-                </div>
-                <CardTitle className="text-accent mb-2">Fase 1</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Grupos + Octavos de final
-                </p>
-              </Card>
-
-              <Card className="text-center border-primary-light/40">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-light/25 flex items-center justify-center">
-                  <span className="text-2xl font-mono font-bold text-white">10</span>
-                </div>
-                <CardTitle className="text-white mb-2">Fase 2</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Cuartos + Semifinales
-                </p>
-              </Card>
-
-            <Card className="text-center border-accent/30 glow-accent">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                <Star className="w-8 h-8 text-accent" />
+      <section className="py-16 bg-gradient-to-b from-background to-surface-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+                <Gift className="h-4 w-4" />
+                Premios Publicados
               </div>
-              <p className="font-mono text-3xl font-bold text-accent mb-2">20 pts</p>
-              <p className="text-text-secondary text-sm">
-                Por finalista
+              <h2 className="font-display text-3xl md:text-5xl text-white">
+                PREMIOS <span className="text-accent">DESTACADOS</span>
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm md:text-base text-text-secondary">
+                Estos premios se muestran directamente desde el módulo de administración y se actualizan según lo que publiques.
               </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Por cada equipo correcto (2)
-              </p>
-            </Card>
+            </div>
+            <Link href="/premios">
+              <Button variant="ghost" className="self-start md:self-auto">
+                Ver Todos Los Premios
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
           </div>
 
-          <p className="text-center text-text-secondary text-sm mt-8 max-w-2xl mx-auto">
-            <strong className="text-white">Importante:</strong> Si fallas el marcador de un partido, no sumas puntos.
-            Para finalistas, sumas por cada equipo correctamente seleccionado.
-          </p>
+          {prizes.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {prizes.slice(0, 3).map((prize) => (
+                <PrizeCard key={prize.id} prize={prize} />
+              ))}
+            </div>
+          ) : (
+            <Card className="py-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
+                <Gift className="h-8 w-8 text-accent" />
+              </div>
+              <CardTitle className="mb-2">Premios Por Confirmar</CardTitle>
+              <p className="mx-auto max-w-xl text-sm text-text-secondary">
+                Aun no hay premios publicados desde administración. En cuanto se carguen, aparecerán aquí automáticamente.
+              </p>
+            </Card>
+          )}
         </div>
       </section>
 

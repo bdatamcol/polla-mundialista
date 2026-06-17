@@ -15,6 +15,7 @@ import { getPredictionStats } from '@/actions/prediction-actions'
 import { getMatches, getNextMatch } from '@/actions/match-actions'
 import { getTopUsers } from '@/actions/user-actions'
 import { getUserPredictions } from '@/actions/prediction-actions'
+import { getFlagEmoji, getFlagUrl } from '@/lib/flags'
 import { formatDateTime } from '@/lib/utils'
 
 // Formatear fecha de forma fija en el servidor
@@ -27,6 +28,19 @@ function formatMatchDate(date: Date | string): string {
   const hours = String(d.getHours()).padStart(2, '0')
   const minutes = String(d.getMinutes()).padStart(2, '0')
   return `${day} de ${month} ${year} - ${hours}:${minutes}`
+}
+
+function resolveTeamFlag(
+  teamName: string,
+  teamFull: string | null | undefined,
+  teamIso2: string | null | undefined,
+  teamTla: string | null | undefined
+) {
+  return {
+    url: getFlagUrl(teamIso2, teamTla, teamFull || teamName),
+    emoji: getFlagEmoji(teamTla),
+    alt: teamFull || teamName,
+  }
 }
 
 export default async function DashboardPage() {
@@ -112,39 +126,80 @@ export default async function DashboardPage() {
             {/* Next Match */}
             {nextMatch && (
               <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-2xl text-white">
-                    PRÓXIMO <span className="text-accent">PARTIDO</span>
-                  </h2>
-                </div>
-                <Card className="border-accent/30">
-                  <div className="flex items-center justify-between mb-4">
-                    <Badge variant="info">{nextMatch.group}</Badge>
-                    <div className="flex items-center gap-2 text-text-secondary text-sm">
-                      <Calendar className="w-4 h-4" />
-                      {formatMatchDate(nextMatch.matchDate)}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-center">
-                      <p className="font-heading font-bold text-xl text-text-primary">
-                        {nextMatch.homeTeam}
-                      </p>
-                    </div>
-                    <div className="px-4 py-2 bg-surface-light rounded-lg">
-                      <span className="text-2xl font-mono text-accent">VS</span>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-heading font-bold text-xl text-text-primary">
-                        {nextMatch.awayTeam}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-6 text-center">
-                    <p className="text-text-secondary text-sm mb-3">Tiempo restante:</p>
-                    <CountdownSimple targetDate={nextMatch.matchDate} />
-                  </div>
-                </Card>
+                {(() => {
+                  const homeFlag = resolveTeamFlag(
+                    nextMatch.homeTeam,
+                    nextMatch.homeTeamFull,
+                    nextMatch.homeTeamIso2,
+                    nextMatch.homeTeamTla
+                  )
+                  const awayFlag = resolveTeamFlag(
+                    nextMatch.awayTeam,
+                    nextMatch.awayTeamFull,
+                    nextMatch.awayTeamIso2,
+                    nextMatch.awayTeamTla
+                  )
+
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="font-display text-2xl text-white">
+                          PRÓXIMO <span className="text-accent">PARTIDO</span>
+                        </h2>
+                      </div>
+                      <Card className="border-accent/30">
+                        <div className="flex items-center justify-between mb-4">
+                          <Badge variant="info">{nextMatch.group}</Badge>
+                          <div className="flex items-center gap-2 text-text-secondary text-sm">
+                            <Calendar className="w-4 h-4" />
+                            {formatMatchDate(nextMatch.matchDate)}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex flex-1 flex-col items-center text-center">
+                            <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-white/10 bg-white/10 shadow-lg shadow-primary-dark/20">
+                              {homeFlag.url ? (
+                                <img
+                                  src={homeFlag.url}
+                                  alt={homeFlag.alt}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-4xl">{homeFlag.emoji}</span>
+                              )}
+                            </div>
+                            <p className="font-heading font-bold text-xl text-text-primary">
+                              {nextMatch.homeTeam}
+                            </p>
+                          </div>
+                          <div className="px-4 py-2 bg-surface-light rounded-lg">
+                            <span className="text-2xl font-mono text-accent">VS</span>
+                          </div>
+                          <div className="flex flex-1 flex-col items-center text-center">
+                            <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-white/10 bg-white/10 shadow-lg shadow-primary-dark/20">
+                              {awayFlag.url ? (
+                                <img
+                                  src={awayFlag.url}
+                                  alt={awayFlag.alt}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-4xl">{awayFlag.emoji}</span>
+                              )}
+                            </div>
+                            <p className="font-heading font-bold text-xl text-text-primary">
+                              {nextMatch.awayTeam}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-6 text-center">
+                          <p className="text-text-secondary text-sm mb-3">Tiempo restante:</p>
+                          <CountdownSimple targetDate={nextMatch.matchDate} />
+                        </div>
+                      </Card>
+                    </>
+                  )
+                })()}
               </section>
             )}
 
@@ -259,7 +314,7 @@ export default async function DashboardPage() {
                   </Button>
                 </Link>
               </div>
-              <RankingTable ranking={topUsers} currentUserId={user.id} />
+              <RankingTable ranking={topUsers} currentUserId={user.id} variant="compact" />
             </section>
 
             {/* Quick Stats */}
