@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { WC_2026_TEAMS } from '@/lib/wc-2026-teams'
 
 /**
  * Verifica si las predicciones de finalistas están cerradas.
@@ -25,10 +26,11 @@ export async function isFinalistPredictionLocked(): Promise<boolean> {
 }
 
 /**
- * Devuelve la lista única de equipos disponibles en el Mundial
- * (basado en los partidos ya sincronizados).
+ * Devuelve la lista de equipos disponibles para elegir como finalistas.
+ * Combina los equipos sincronizados en la BD con la lista oficial del Mundial 2026.
  */
 export async function getAvailableTeams() {
+  // 1. Intentar obtener equipos desde los partidos sincronizados
   const matches = await prisma.match.findMany({
     where: {
       NOT: {
@@ -67,6 +69,22 @@ export async function getAvailableTeams() {
         flag: m.homeTeamFlag,
         crest: m.homeTeamCrest,
         iso2: m.homeTeamIso2,
+      })
+    }
+  }
+
+  // 2. Combinar con la lista oficial de WC 2026 (incluyendo equipos débiles
+  //    como Haití, Cabo Verde, Curazao, etc. para que los usuarios puedan
+  //    predecir incluso "este equipo no pasa de grupos")
+  for (const team of WC_2026_TEAMS) {
+    if (!teamsMap.has(team.tla)) {
+      teamsMap.set(team.tla, {
+        name: team.name,
+        full: team.name,
+        tla: team.tla,
+        flag: null,
+        crest: null,
+        iso2: team.iso2,
       })
     }
   }

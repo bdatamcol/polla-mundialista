@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trophy, Medal, Check, X } from 'lucide-react'
+import { Trophy, Medal, Check, X, Search, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { saveFinalistPrediction } from '@/actions/finalist-actions'
@@ -27,9 +27,7 @@ interface FinalistFormProps {
 export function FinalistForm({ teams, initialPicks, locked, hasExistingPrediction }: FinalistFormProps) {
   const router = useRouter()
   const [semis, setSemis] = useState<string[]>(
-    initialPicks.semifinalists.length === 4
-      ? initialPicks.semifinalists
-      : ['', '', '', '']
+    initialPicks.semifinalists.length === 4 ? initialPicks.semifinalists : ['', '', '', '']
   )
   const [finals, setFinals] = useState<string[]>(
     initialPicks.finalists.length === 2 ? initialPicks.finalists : ['', '']
@@ -37,20 +35,24 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState<{
+    category: 'semi' | 'final'
+    index: number
+  } | null>(null)
 
-  // Equipos disponibles (excluyendo los ya seleccionados en semis para la lista de semis,
-  // pero permitiendo reutilizar para finalists)
-  const availableForSemis = teams.filter((t) => !semis.includes(t.tla) || semis.includes(t.tla))
-  const availableForFinals = teams.filter((t) => !finals.includes(t.tla) || finals.includes(t.tla))
+  const getTeamById = (tla: string) => teams.find((t) => t.tla === tla)
 
-  const selectTeam = (category: 'semi' | 'final', index: number, tla: string) => {
+  const handleSelect = (tla: string) => {
+    if (!pickerOpen) return
+    const { category, index } = pickerOpen
     setError(null)
     setSuccess(false)
+
     if (category === 'semi') {
       const newSemis = [...semis]
       newSemis[index] = tla
       setSemis(newSemis)
-      // Si el finalista en este slot coincide, limpiar
+      // Si el equipo seleccionado estaba como finalista, limpiarlo
       if (finals.includes(tla)) {
         setFinals(finals.map((f) => (f === tla ? '' : f)))
       }
@@ -59,9 +61,10 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
       newFinals[index] = tla
       setFinals(newFinals)
     }
+    setPickerOpen(null)
   }
 
-  const clearSlot = (category: 'semi' | 'final', index: number) => {
+  const handleClear = (category: 'semi' | 'final', index: number) => {
     if (category === 'semi') {
       const newSemis = [...semis]
       newSemis[index] = ''
@@ -95,7 +98,7 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
     }
     for (const finalist of finals) {
       if (finalist && !semis.includes(finalist)) {
-        setError(`El finalista ${finalist} debe estar entre tus semifinalistas`)
+        setError(`El finalista debe estar entre tus semifinalistas`)
         return
       }
     }
@@ -119,8 +122,6 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
     }
   }
 
-  const getTeamById = (tla: string) => teams.find((t) => t.tla === tla)
-
   return (
     <div className="space-y-6">
       {/* SEMIFINALISTAS */}
@@ -137,21 +138,16 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {semis.map((tla, index) => {
-            const team = getTeamById(tla)
-            return (
-              <TeamSlot
-                key={`semi-${index}`}
-                index={index + 1}
-                team={team}
-                teams={availableForSemis}
-                selectedTlas={semis}
-                onSelect={(t) => selectTeam('semi', index, t)}
-                onClear={() => clearSlot('semi', index)}
-                disabled={locked}
-              />
-            )
-          })}
+          {semis.map((tla, index) => (
+            <TeamSlot
+              key={`semi-${index}`}
+              index={index + 1}
+              team={getTeamById(tla)}
+              onClick={() => !locked && setPickerOpen({ category: 'semi', index })}
+              onClear={() => handleClear('semi', index)}
+              disabled={locked}
+            />
+          ))}
         </div>
       </Card>
 
@@ -173,22 +169,17 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {finals.map((tla, index) => {
-            const team = getTeamById(tla)
-            return (
-              <TeamSlot
-                key={`final-${index}`}
-                index={index + 1}
-                team={team}
-                teams={teams.filter((t) => t.tla === tla || (!semis.includes(t.tla) || t.tla === ''))}
-                selectedTlas={finals}
-                onSelect={(t) => selectTeam('final', index, t)}
-                onClear={() => clearSlot('final', index)}
-                disabled={locked}
-                highlight
-              />
-            )
-          })}
+          {finals.map((tla, index) => (
+            <TeamSlot
+              key={`final-${index}`}
+              index={index + 1}
+              team={getTeamById(tla)}
+              onClick={() => !locked && setPickerOpen({ category: 'final', index })}
+              onClear={() => handleClear('final', index)}
+              disabled={locked}
+              highlight
+            />
+          ))}
         </div>
       </Card>
 
@@ -208,7 +199,7 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
 
       {/* Submit */}
       {!locked && (
-        <div className="flex gap-3 sticky bottom-4">
+        <div className="flex gap-3">
           <Button
             onClick={handleSubmit}
             isLoading={isLoading}
@@ -220,6 +211,29 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
           </Button>
         </div>
       )}
+
+      {/* MODAL: Selector de equipos */}
+      {pickerOpen && (
+        <TeamPickerModal
+          teams={teams}
+          excludeTlas={
+            pickerOpen.category === 'semi'
+              ? semis.filter((t, i) => t && i !== pickerOpen.index)
+              : finals.filter((t, i) => t && i !== pickerOpen.index)
+          }
+          allowedTlas={
+            pickerOpen.category === 'final' ? semis : undefined
+          }
+          onSelect={handleSelect}
+          onClose={() => setPickerOpen(null)}
+          category={pickerOpen.category}
+          index={pickerOpen.index + 1}
+          semifinalists={semis}
+          finalists={finals}
+          currentPicks={pickerOpen.category === 'semi' ? semis : finals}
+          currentIndex={pickerOpen.index}
+        />
+      )}
     </div>
   )
 }
@@ -227,19 +241,16 @@ export function FinalistForm({ teams, initialPicks, locked, hasExistingPredictio
 interface TeamSlotProps {
   index: number
   team: Team | undefined
-  teams: Team[]
-  selectedTlas: string[]
-  onSelect: (tla: string) => void
+  onClick: () => void
   onClear: () => void
   disabled: boolean
   highlight?: boolean
 }
 
-function TeamSlot({ index, team, teams, selectedTlas, onSelect, onClear, disabled, highlight }: TeamSlotProps) {
-  const [open, setOpen] = useState(false)
+function TeamSlot({ index, team, onClick, onClear, disabled, highlight }: TeamSlotProps) {
+  const flagUrl = team ? getFlagUrl(team.iso2, team.tla, team.full) : null
 
   if (team) {
-    const flagUrl = getFlagUrl(team.iso2, team.tla, team.full)
     return (
       <div
         className={`p-3 rounded-lg border-2 ${
@@ -274,59 +285,171 @@ function TeamSlot({ index, team, teams, selectedTlas, onSelect, onClear, disable
   }
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => !disabled && setOpen(!open)}
-        disabled={disabled}
-        className={`w-full p-3 rounded-lg border-2 border-dashed ${
-          highlight ? 'border-accent/30' : 'border-primary/30'
-        } hover:border-accent/60 transition-colors text-left ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-        }`}
-      >
-        <p className="text-xs text-text-secondary">Selección {index}</p>
-        <p className="font-heading text-text-secondary">Seleccionar equipo...</p>
-      </button>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full p-3 rounded-lg border-2 border-dashed text-left transition-colors ${
+        highlight
+          ? 'border-accent/30 hover:border-accent/60'
+          : 'border-primary/30 hover:border-primary/60'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      <p className="text-xs text-text-secondary">Selección {index}</p>
+      <p className="font-heading text-text-secondary flex items-center gap-1">
+        Seleccionar equipo...
+        <ChevronDown className="w-4 h-4" />
+      </p>
+    </button>
+  )
+}
 
-      {open && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-surface border border-surface-light rounded-lg shadow-xl">
-            {teams
-              .filter((t) => !selectedTlas.includes(t.tla) || t.tla === '')
-              .map((t) => {
+interface TeamPickerModalProps {
+  teams: Team[]
+  excludeTlas: string[]
+  allowedTlas?: string[] // Si está definido, solo se permiten estos TLAs
+  onSelect: (tla: string) => void
+  onClose: () => void
+  category: 'semi' | 'final'
+  index: number
+  semifinalists: string[]
+  finalists: string[]
+  currentPicks: string[]
+  currentIndex: number
+}
+
+function TeamPickerModal({
+  teams,
+  excludeTlas,
+  allowedTlas,
+  onSelect,
+  onClose,
+  category,
+  index,
+  semifinalists,
+}: TeamPickerModalProps) {
+  const [search, setSearch] = useState('')
+
+  // Cerrar con Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
+
+  const filteredTeams = teams
+    .filter((t) => {
+      // Si hay una lista permitida, solo permitir esos equipos
+      if (allowedTlas && !allowedTlas.includes(t.tla)) return false
+      // Excluir equipos ya seleccionados en otros slots
+      if (excludeTlas.includes(t.tla)) return false
+      return true
+    })
+    .filter((t) => {
+      if (!search.trim()) return true
+      const s = search.toLowerCase()
+      return (
+        t.name.toLowerCase().includes(s) ||
+        t.tla.toLowerCase().includes(s) ||
+        t.full.toLowerCase().includes(s)
+      )
+    })
+
+  const title = category === 'semi' ? 'Selecciona un Semifinalista' : 'Selecciona un Finalista'
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl max-h-[80vh] bg-surface border border-surface-light rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-surface-light flex-shrink-0">
+          <div>
+            <h3 className="font-display text-lg text-white">{title}</h3>
+            <p className="text-xs text-text-secondary">
+              Selección {index} · {filteredTeams.length} equipos disponibles
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-surface-light rounded-lg transition-colors"
+            aria-label="Cerrar"
+          >
+            <X className="w-5 h-5 text-text-secondary" />
+          </button>
+        </div>
+
+        {/* Buscador */}
+        <div className="p-4 border-b border-surface-light flex-shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+            <input
+              type="text"
+              placeholder="Buscar equipo por nombre o código..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+              className="w-full pl-10 pr-4 py-2 bg-background border border-surface-light rounded-lg text-white text-sm placeholder-text-secondary focus:outline-none focus:border-accent"
+            />
+          </div>
+        </div>
+
+        {/* Lista de equipos */}
+        <div className="flex-1 overflow-y-auto p-2">
+          {filteredTeams.length === 0 ? (
+            <div className="text-center py-8 text-text-secondary">
+              {category === 'final' && semifinalists.filter(Boolean).length < 4
+                ? 'Primero debes completar tus 4 semifinalistas antes de elegir finalistas.'
+                : search.trim()
+                ? 'No se encontraron equipos con ese nombre'
+                : 'No hay equipos disponibles'}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+              {filteredTeams.map((t) => {
                 const flagUrl = getFlagUrl(t.iso2, t.tla, t.full)
                 return (
                   <button
                     key={t.tla}
                     type="button"
-                    onClick={() => {
-                      onSelect(t.tla)
-                      setOpen(false)
-                    }}
-                    className="w-full flex items-center gap-3 p-2 hover:bg-surface-light text-left"
+                    onClick={() => onSelect(t.tla)}
+                    className="flex items-center gap-3 p-3 hover:bg-surface-light rounded-lg text-left transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center overflow-hidden flex-shrink-0">
                       {flagUrl ? (
                         <img src={flagUrl} alt={t.full} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-lg">{getFlagEmoji(t.tla)}</span>
+                        <span className="text-xl">{getFlagEmoji(t.tla)}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white truncate">{t.name}</p>
+                      <p className="text-sm text-white truncate font-medium">{t.name}</p>
                       <p className="text-xs text-text-secondary font-mono">{t.tla}</p>
                     </div>
                   </button>
                 )
               })}
-          </div>
-        </>
-      )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-surface-light flex-shrink-0">
+          <Button variant="outline" onClick={onClose} className="w-full">
+            Cancelar
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

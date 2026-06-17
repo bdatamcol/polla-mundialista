@@ -28,9 +28,9 @@ export async function GET() {
     }
 
     const pointsConfigForCalc = {
-      groupStagePoints: pointsConfig.groupStagePoints,
-      quartersPoints: pointsConfig.quartersPoints,
-      finalPoints: pointsConfig.finalPoints,
+      matchPoints: pointsConfig.matchPoints,
+      semifinalistPoints: pointsConfig.semifinalistPoints,
+      finalistPoints: pointsConfig.finalistPoints,
     }
 
     const results = {
@@ -98,9 +98,9 @@ export async function GET() {
             prediction.awayGoals,
             matchData.homeGoals!,
             matchData.awayGoals!,
-            { matchPoints: pointsConfigForCalc.groupStagePoints, 
-              semifinalistPoints: pointsConfigForCalc.quartersPoints, 
-              finalistPoints: pointsConfigForCalc.finalPoints },
+            { matchPoints: pointsConfigForCalc.matchPoints,
+              semifinalistPoints: pointsConfigForCalc.semifinalistPoints,
+              finalistPoints: pointsConfigForCalc.finalistPoints },
             existingMatch.phase
           )
 

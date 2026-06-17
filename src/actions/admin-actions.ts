@@ -335,6 +335,26 @@ export async function getPrizes() {
   })
 }
 
+export async function getPrizeById(id: string) {
+  const admin = await isAdmin()
+  if (!admin) {
+    return null
+  }
+  return prisma.prize.findUnique({
+    where: { id },
+  })
+}
+
+export async function getAllPrizesAdmin() {
+  const admin = await isAdmin()
+  if (!admin) {
+    return []
+  }
+  return prisma.prize.findMany({
+    orderBy: { position: 'asc' },
+  })
+}
+
 export async function getPointsConfig() {
   let config = await prisma.pointsConfig.findFirst()
   if (!config) {

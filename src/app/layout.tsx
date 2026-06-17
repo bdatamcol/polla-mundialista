@@ -20,7 +20,7 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className="min-h-screen flex flex-col">
-       <Navbar user={user ? { ...user, password: '', updatedAt: new Date() } : null} />
+       <Navbar user={user ? { ...user, password: '', updatedAt: new Date(), finalistPoints: (user as any).finalistPoints ?? 0 } as any : null} />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>

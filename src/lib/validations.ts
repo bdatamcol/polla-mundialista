@@ -40,7 +40,14 @@ export const prizeSchema = z.object({
   position: z.number().int().min(1),
   title: z.string().min(1, 'Título requerido'),
   description: z.string().min(1, 'Descripción requerida'),
-  imageUrl: z.string().url().optional().nullable(),
+  imageUrl: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.trim().length > 0 ? val : null))
+    .refine((val) => val === null || /^https?:\/\/.+/.test(val), {
+      message: 'URL de imagen inválida',
+    }),
   conditions: z.string().min(1, 'Condiciones requeridas'),
   isPublished: z.boolean().default(true),
 })

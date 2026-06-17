@@ -42,6 +42,24 @@ export default function ConfiguracionPage() {
     }
   }
 
+  const handleRecalculate = async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/admin/recalculate-points', { method: 'POST' })
+      if (res.ok) {
+        router.refresh()
+        alert('Puntos recalculados con éxito')
+      } else {
+        alert('Error al recalcular puntos')
+      }
+    } catch (error) {
+      console.error(error)
+      alert('Error de conexión')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,14 +152,9 @@ export default function ConfiguracionPage() {
           <p className="text-text-secondary text-sm mb-4">
             Recalcula todos los puntos de partidos y finalistas con la nueva configuración. Útil después de cambiar los valores.
           </p>
-          <form action={async () => {
-            'use server'
-            // This would call recalculateAllPoints
-          }}>
-            <Button variant="outline" type="submit">
-              Recalcular Todos los Puntos
-            </Button>
-          </form>
+          <Button variant="outline" type="button" onClick={handleRecalculate} isLoading={isLoading}>
+            Recalcular Todos los Puntos
+          </Button>
         </Card>
       </div>
     </div>
