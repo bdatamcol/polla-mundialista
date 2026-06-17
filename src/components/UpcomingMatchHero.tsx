@@ -33,13 +33,25 @@ export function UpcomingMatchHero({ match }: UpcomingMatchHeroProps) {
       </div>
 
       <div className="mt-5 rounded-[28px] border border-accent/20 bg-background-dark/60 p-5 shadow-2xl shadow-primary-dark/30 backdrop-blur-md md:p-8">
-        <div className="mb-6">
-          <CountdownSimple targetDate={match.matchDate} />
+        <div className="mb-5 flex flex-wrap items-center justify-center gap-2 md:justify-between">
+          <div className="rounded-full bg-white/8 px-4 py-1 text-sm text-text-secondary ring-1 ring-white/10">
+            {match.group}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-text-secondary sm:text-sm">
+            <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+              <CalendarDays className="w-4 h-4 text-accent" />
+              <span>{formatDate(match.matchDate)}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+              <Clock3 className="w-4 h-4 text-accent" />
+              <span>{formatTime(match.matchDate)}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-          <div className="flex flex-col items-center text-center">
-            <div className="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white/10 bg-white/10 shadow-lg shadow-primary-dark/20 md:h-24 md:w-24">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-5">
+          <div className="min-w-0 flex flex-col items-center text-center">
+            <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-white/10 bg-white/10 shadow-lg shadow-primary-dark/20 md:h-24 md:w-24">
               {homeFlagUrl && !homeFlagError ? (
                 <img
                   src={homeFlagUrl}
@@ -48,28 +60,25 @@ export function UpcomingMatchHero({ match }: UpcomingMatchHeroProps) {
                   onError={() => setHomeFlagError(true)}
                 />
               ) : (
-                <span className="text-5xl">{homeEmoji}</span>
+                <span className="text-4xl md:text-5xl">{homeEmoji}</span>
               )}
             </div>
-            <p className="max-w-[14rem] font-heading text-xl font-bold text-white md:text-2xl">
+            <p className="max-w-[7rem] break-words font-heading text-lg font-bold leading-tight text-white md:max-w-[14rem] md:text-2xl">
               {match.homeTeam}
             </p>
             {match.homeTeamFull && match.homeTeamFull !== match.homeTeam && (
-              <p className="mt-1 text-sm text-text-secondary">{match.homeTeamFull}</p>
+              <p className="mt-1 hidden text-sm text-text-secondary md:block">{match.homeTeamFull}</p>
             )}
           </div>
 
           <div className="flex flex-col items-center justify-center gap-3">
-            <div className="rounded-full border border-accent/30 bg-accent px-5 py-2 font-display text-xl text-black shadow-lg shadow-accent/20 md:text-2xl">
+            <div className="rounded-full border border-accent/30 bg-accent px-4 py-2 font-display text-lg text-black shadow-lg shadow-accent/20 md:px-5 md:text-2xl">
               VS
-            </div>
-            <div className="rounded-full bg-white/8 px-4 py-1 text-sm text-text-secondary ring-1 ring-white/10">
-              {match.group}
             </div>
           </div>
 
-          <div className="flex flex-col items-center text-center">
-            <div className="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white/10 bg-white/10 shadow-lg shadow-primary-dark/20 md:h-24 md:w-24">
+          <div className="min-w-0 flex flex-col items-center text-center">
+            <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-white/10 bg-white/10 shadow-lg shadow-primary-dark/20 md:h-24 md:w-24">
               {awayFlagUrl && !awayFlagError ? (
                 <img
                   src={awayFlagUrl}
@@ -78,27 +87,20 @@ export function UpcomingMatchHero({ match }: UpcomingMatchHeroProps) {
                   onError={() => setAwayFlagError(true)}
                 />
               ) : (
-                <span className="text-5xl">{awayEmoji}</span>
+                <span className="text-4xl md:text-5xl">{awayEmoji}</span>
               )}
             </div>
-            <p className="max-w-[14rem] font-heading text-xl font-bold text-white md:text-2xl">
+            <p className="max-w-[7rem] break-words font-heading text-lg font-bold leading-tight text-white md:max-w-[14rem] md:text-2xl">
               {match.awayTeam}
             </p>
             {match.awayTeamFull && match.awayTeamFull !== match.awayTeam && (
-              <p className="mt-1 text-sm text-text-secondary">{match.awayTeamFull}</p>
+              <p className="mt-1 hidden text-sm text-text-secondary md:block">{match.awayTeamFull}</p>
             )}
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col items-center justify-center gap-3 border-t border-white/10 pt-5 text-sm text-text-secondary md:flex-row md:gap-6">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-accent" />
-            <span>{formatDate(match.matchDate)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock3 className="w-4 h-4 text-accent" />
-            <span>{formatTime(match.matchDate)}</span>
-          </div>
+        <div className="mt-6">
+          <CountdownSimple targetDate={match.matchDate} />
         </div>
       </div>
     </div>

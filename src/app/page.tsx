@@ -68,6 +68,46 @@ export default async function HomePage() {
             </div>
           </div>
 
+          {!user && (
+            <div className="mb-12">
+              <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-12">
+                ¿CÓMO <span className="text-accent">PARTICIPAR</span>?
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="text-center card-hover">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                    <Users className="w-8 h-8 text-accent" />
+                  </div>
+                  <CardTitle className="mb-2">1. Regístrate</CardTitle>
+                  <p className="text-text-secondary text-sm">
+                    Crea tu cuenta gratuita con tu correo electrónico y acepta los términos y condiciones.
+                  </p>
+                </Card>
+
+                <Card className="text-center card-hover">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                    <Trophy className="w-8 h-8 text-accent" />
+                  </div>
+                  <CardTitle className="mb-2">2. Predice</CardTitle>
+                  <p className="text-text-secondary text-sm">
+                    Selecciona los resultados de todos los partidos del Mundial antes de que inicien.
+                  </p>
+                </Card>
+
+                <Card className="text-center card-hover">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                    <Gift className="w-8 h-8 text-accent" />
+                  </div>
+                  <CardTitle className="mb-2">3. Gana</CardTitle>
+                  <p className="text-text-secondary text-sm">
+                    Acumula puntos por cada acierto y compite por los premios del ranking.
+                  </p>
+                </Card>
+              </div>
+            </div>
+          )}
+
           {/* Countdown */}
           {nextMatch && (
             <div className="mb-12">
@@ -83,48 +123,6 @@ export default async function HomePage() {
           </svg>
         </div>
       </section>
-
-      {!user && (
-        <section className="py-16 bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-12">
-              ¿CÓMO <span className="text-accent">PARTICIPAR</span>?
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="text-center card-hover">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Users className="w-8 h-8 text-accent" />
-                </div>
-                <CardTitle className="mb-2">1. Regístrate</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Crea tu cuenta gratuita con tu correo electrónico y acepta los términos y condiciones.
-                </p>
-              </Card>
-
-              <Card className="text-center card-hover">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Trophy className="w-8 h-8 text-accent" />
-                </div>
-                <CardTitle className="mb-2">2. Predice</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Selecciona los resultados de todos los partidos del Mundial antes de que inicien.
-                </p>
-              </Card>
-
-              <Card className="text-center card-hover">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Gift className="w-8 h-8 text-accent" />
-                </div>
-                <CardTitle className="mb-2">3. Gana</CardTitle>
-                <p className="text-text-secondary text-sm">
-                  Acumula puntos por cada acierto y compite por los premios del ranking.
-                </p>
-              </Card>
-            </div>
-          </div>
-        </section>
-      )}
 
       <section className="py-16 bg-gradient-to-b from-background to-surface-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
