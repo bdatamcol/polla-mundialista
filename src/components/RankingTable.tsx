@@ -1,4 +1,4 @@
-import { Crown, Medal, Trophy } from 'lucide-react'
+import { Crown, Medal, Sparkles, Trophy } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import type { RankingEntry } from '@/types'
 
@@ -12,31 +12,37 @@ const PODIUM_STYLES = {
   1: {
     border: 'border-accent',
     ring: 'ring-2 ring-accent/30',
-    bg: 'bg-gradient-to-b from-accent/15 via-accent/5 to-transparent',
+    bg: 'bg-gradient-to-b from-accent/20 via-primary-light/20 to-surface-dark/90',
     icon: Crown,
     iconColor: 'text-accent',
     iconBg: 'bg-accent/20',
-    height: 'min-h-[200px]',
+    height: 'min-h-[240px]',
+    offset: 'md:-translate-y-4',
+    badge: 'Campeon',
     crown: true,
   },
   2: {
     border: 'border-primary-light/50',
     ring: 'ring-1 ring-primary-light/25',
-    bg: 'bg-gradient-to-b from-primary-light/20 to-transparent',
+    bg: 'bg-gradient-to-b from-primary-light/20 to-surface-dark/90',
     icon: Medal,
     iconColor: 'text-white',
     iconBg: 'bg-primary-light/30',
-    height: 'min-h-[180px]',
+    height: 'min-h-[220px]',
+    offset: 'md:translate-y-3',
+    badge: 'Subcampeon',
     crown: false,
   },
   3: {
     border: 'border-accent/40',
     ring: 'ring-1 ring-accent/25',
-    bg: 'bg-gradient-to-b from-accent/15 to-transparent',
+    bg: 'bg-gradient-to-b from-accent/10 to-surface-dark/90',
     icon: Medal,
     iconColor: 'text-accent',
     iconBg: 'bg-accent/20',
-    height: 'min-h-[160px]',
+    height: 'min-h-[205px]',
+    offset: 'md:translate-y-6',
+    badge: 'Top 3',
     crown: false,
   },
 }
@@ -64,13 +70,29 @@ export function RankingTable({ ranking, currentUserId }: RankingTableProps) {
     <div className="space-y-10">
       {/* PODIO TOP 3 */}
       {top3.length > 0 && (
-        <div>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Trophy className="w-5 h-5 text-accent" />
-            <h2 className="font-display text-xl text-white">PODIO</h2>
-            <Trophy className="w-5 h-5 text-accent" />
+        <div className="relative overflow-hidden rounded-[28px] border border-accent/15 bg-gradient-to-br from-primary-dark via-background to-background-dark px-4 py-8 shadow-[0_24px_80px_rgba(1,9,53,0.45)] sm:px-6 lg:px-8">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute left-1/2 top-0 h-32 w-32 -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
+            <div className="absolute bottom-0 left-10 h-24 w-24 rounded-full bg-primary-light/20 blur-3xl" />
+            <div className="absolute right-10 top-12 h-24 w-24 rounded-full bg-accent/10 blur-3xl" />
           </div>
-          <div className="grid grid-cols-3 gap-3 items-end max-w-2xl mx-auto">
+
+          <div className="relative flex flex-col items-center gap-3 text-center mb-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+              <Sparkles className="h-4 w-4" />
+              Lideres Del Torneo
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Trophy className="w-5 h-5 text-accent" />
+              <h2 className="font-display text-2xl text-white sm:text-3xl">Podio Ranking</h2>
+              <Trophy className="w-5 h-5 text-accent" />
+            </div>
+            <p className="max-w-2xl text-sm text-text-secondary sm:text-base">
+              Los participantes con mejor rendimiento aparecen primero con su puntaje exacto y sus aciertos destacados.
+            </p>
+          </div>
+
+          <div className="relative grid grid-cols-1 gap-4 items-end max-w-4xl mx-auto sm:grid-cols-2 md:grid-cols-3">
             {podiumOrder.map((entry) => {
               const style = PODIUM_STYLES[entry.position as 1 | 2 | 3]
               const Icon = style.icon
@@ -78,27 +100,50 @@ export function RankingTable({ ranking, currentUserId }: RankingTableProps) {
               return (
                 <Card
                   key={entry.id}
-                  className={`${style.bg} ${style.border} ${style.ring} ${style.height} text-center relative overflow-hidden`}
+                  className={`${style.bg} ${style.border} ${style.ring} ${style.height} ${style.offset} text-center relative overflow-hidden px-5 py-6 transition-transform duration-300 hover:-translate-y-1`}
                 >
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-accent/80 to-transparent" />
+                  <div className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-secondary">
+                    #{entry.position}
+                  </div>
                   {style.crown && (
                     <div className="absolute -top-1 left-0 right-0 text-center">
-                      <Crown className="w-6 h-6 text-accent mx-auto fill-accent" />
+                      <Crown className="w-7 h-7 text-accent mx-auto fill-accent" />
                     </div>
                   )}
-                  <div className={`w-14 h-14 mx-auto mb-3 rounded-full ${style.iconBg} flex items-center justify-center`}>
-                    <Icon className={`w-7 h-7 ${style.iconColor}`} />
+                  <div className="mb-4 flex items-center justify-center">
+                    <div className={`w-16 h-16 rounded-full ${style.iconBg} flex items-center justify-center shadow-lg shadow-primary-dark/20`}>
+                      <Icon className={`w-8 h-8 ${style.iconColor}`} />
+                    </div>
                   </div>
-                  <p className={`font-display text-3xl mb-1 ${style.iconColor}`}>
-                    {entry.position}
-                  </p>
-                  <p className="font-heading font-bold text-white text-sm truncate px-2">
+                  <div className="mb-2">
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-text-secondary">
+                      {style.badge}
+                    </p>
+                    <p className={`font-display text-4xl leading-none mt-2 ${style.iconColor}`}>
+                      {entry.position}
+                    </p>
+                  </div>
+                  <p className="font-heading font-bold text-white text-base truncate px-2">
                     {entry.name}
                     {isMe && <span className="ml-1 text-accent text-xs">(Tú)</span>}
                   </p>
-                  <p className="font-mono text-2xl font-bold text-accent mt-2">
-                    {entry.totalPoints}
-                  </p>
-                  <p className="text-xs text-text-secondary">pts</p>
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                    <p className="font-mono text-3xl font-bold text-accent leading-none">
+                      {entry.totalPoints}
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.3em] text-text-secondary">Puntos</p>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-left">
+                    <div className="rounded-xl bg-black/10 px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-[0.25em] text-text-secondary">Exactos</p>
+                      <p className="mt-1 font-mono text-lg font-bold text-white">{entry.exactScores}</p>
+                    </div>
+                    <div className="rounded-xl bg-black/10 px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-[0.25em] text-text-secondary">Predic.</p>
+                      <p className="mt-1 font-mono text-lg font-bold text-white">{entry.predictionsCount}</p>
+                    </div>
+                  </div>
                 </Card>
               )
             })}
@@ -110,7 +155,7 @@ export function RankingTable({ ranking, currentUserId }: RankingTableProps) {
       {rest.length > 0 && (
         <div>
           <div className="border-t border-surface-light pt-6">
-            <h3 className="font-heading text-sm uppercase tracking-wider text-text-secondary mb-4 px-2">
+            <h3 className="font-heading text-sm uppercase tracking-[0.25em] text-text-secondary mb-4 px-2">
               Clasificación General
             </h3>
             <div className="space-y-2">
@@ -119,8 +164,8 @@ export function RankingTable({ ranking, currentUserId }: RankingTableProps) {
                 return (
                   <div
                     key={entry.id}
-                    className={`flex items-center gap-4 px-4 py-3 rounded-lg bg-surface/40 ${
-                      isMe ? 'border border-accent/40 bg-accent/5' : 'border border-transparent'
+                    className={`flex items-center gap-4 px-4 py-3 rounded-xl bg-surface/40 transition-colors ${
+                      isMe ? 'border border-accent/40 bg-accent/5 shadow-lg shadow-accent/5' : 'border border-transparent hover:bg-surface/60'
                     }`}
                   >
                     {/* Posición */}

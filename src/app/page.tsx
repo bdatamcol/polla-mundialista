@@ -1,20 +1,22 @@
 import Link from 'next/link'
-import { Trophy, Users, Gift, TrendingUp, Calendar, Clock, ArrowRight, Star } from 'lucide-react'
+import { Trophy, Users, Gift, TrendingUp, Clock, ArrowRight, Star } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { RankingTable } from '@/components/RankingTable'
 import { UpcomingMatchHero } from '@/components/UpcomingMatchHero'
 import { getTopUsers } from '@/actions/user-actions'
 import { getNextMatch } from '@/actions/match-actions'
+import { getCurrentUser } from '@/lib/auth'
 import { maybeLazySyncResults } from '@/lib/lazy-sync'
 
 export default async function HomePage() {
   // Disparar lazy sync en background (no bloquea la página)
   maybeLazySyncResults().catch(() => {})
 
-  const [topUsers, nextMatch] = await Promise.all([
+  const [topUsers, nextMatch, user] = await Promise.all([
     getTopUsers(5),
     getNextMatch(),
+    getCurrentUser(),
   ])
 
   return (
@@ -34,10 +36,14 @@ export default async function HomePage() {
               <Star className="w-4 h-4" />
               <span className="text-sm font-medium">Mundial 2026 - Estados Unidos, México, Canadá</span>
             </div>
-
-            <h1 className="font-display text-5xl md:text-7xl text-white mb-4">
-              POLLA <span className="text-gradient">MUNDIALISTA</span>
-            </h1>
+            <div className="flex justify-center mb-6">
+              <img 
+                src="polla-mundialista.png" 
+                alt="POLLA MUNDIALISTA" 
+                className="w-56 h-56 md:w-72 md:h-72 drop-shadow-2xl animate-float" 
+              />
+            </div>
+            
 
             <p className="text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto mb-8">
               Demuestra tu conocimiento futbolístico. Predice los resultados de todos los partidos 
@@ -75,46 +81,47 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-12">
-            ¿CÓMO <span className="text-accent">PARTICIPAR</span>?
-          </h2>
+      {!user && (
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-12">
+              ¿CÓMO <span className="text-accent">PARTICIPAR</span>?
+            </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="text-center card-hover">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                <Users className="w-8 h-8 text-accent" />
-              </div>
-              <CardTitle className="mb-2">1. Regístrate</CardTitle>
-              <p className="text-text-secondary text-sm">
-                Crea tu cuenta gratuita con tu correo electrónico y acepta los términos y condiciones.
-              </p>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="text-center card-hover">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-accent" />
+                </div>
+                <CardTitle className="mb-2">1. Regístrate</CardTitle>
+                <p className="text-text-secondary text-sm">
+                  Crea tu cuenta gratuita con tu correo electrónico y acepta los términos y condiciones.
+                </p>
+              </Card>
 
-            <Card className="text-center card-hover">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-accent" />
-              </div>
-              <CardTitle className="mb-2">2. Predice</CardTitle>
-              <p className="text-text-secondary text-sm">
-                Selecciona los resultados de todos los partidos del Mundial antes de que inicien.
-              </p>
-            </Card>
+              <Card className="text-center card-hover">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Trophy className="w-8 h-8 text-accent" />
+                </div>
+                <CardTitle className="mb-2">2. Predice</CardTitle>
+                <p className="text-text-secondary text-sm">
+                  Selecciona los resultados de todos los partidos del Mundial antes de que inicien.
+                </p>
+              </Card>
 
-            <Card className="text-center card-hover">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                <Gift className="w-8 h-8 text-accent" />
-              </div>
-              <CardTitle className="mb-2">3. Gana</CardTitle>
-              <p className="text-text-secondary text-sm">
-                Acumula puntos por cada acierto y compite por los premios del ranking.
-              </p>
-            </Card>
+              <Card className="text-center card-hover">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Gift className="w-8 h-8 text-accent" />
+                </div>
+                <CardTitle className="mb-2">3. Gana</CardTitle>
+                <p className="text-text-secondary text-sm">
+                  Acumula puntos por cada acierto y compite por los premios del ranking.
+                </p>
+              </Card>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Points System */}
         <section className="py-16 bg-gradient-to-b from-background to-surface-dark">
@@ -165,14 +172,23 @@ export default async function HomePage() {
         </section>
 
       {/* Top Ranking Preview */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-gradient-to-b from-background via-background to-background-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="font-display text-3xl md:text-4xl text-white">
-              TOP <span className="text-accent">RANKING</span>
-            </h2>
+          <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+                <Star className="h-4 w-4" />
+                Competencia En Vivo
+              </div>
+              <h2 className="font-display text-3xl md:text-5xl text-white">
+                TOP <span className="text-accent">RANKING</span>
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm md:text-base text-text-secondary">
+                Mira a los jugadores más finos del torneo, su puntaje acumulado y quién está marcando el ritmo de la polla.
+              </p>
+            </div>
             <Link href="/ranking">
-              <Button variant="ghost">
+              <Button variant="ghost" className="self-start md:self-auto">
                 Ver Ranking Completo
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
@@ -183,23 +199,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-primary-dark via-primary to-primary-light">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display text-3xl md:text-4xl text-white mb-4">
-            ¿LISTO PARA EL MUNDIAL?
-          </h2>
-          <p className="text-text-secondary text-lg mb-8">
-            Únete a la competencia más grande de predicciones del Mundial 2026.
-          </p>
-          <Link href="/registro" scroll>
-            <Button size="lg" className="animate-pulse-glow">
-              <Calendar className="mr-2 w-5 h-5" />
-              Regístrate Ahora
-            </Button>
-          </Link>
-        </div>
-      </section>
     </div>
   )
 }
