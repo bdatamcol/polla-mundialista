@@ -21,7 +21,7 @@ export default async function ReglamentoPage() {
           </h1>
           <p className="text-text-secondary max-w-xl mx-auto">
             Conoce todas las reglas, el sistema de puntos y los premios para participar en la Polla
-            Mundialista Town Center.
+            Mundialista TownCenter.
           </p>
         </div>
 
