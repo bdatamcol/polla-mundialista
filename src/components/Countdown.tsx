@@ -50,19 +50,23 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
   ]
 
   return (
-    <div className="flex items-center gap-2 sm:gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       {timeUnits.map((unit, index) => (
-        <div key={unit.label} className="flex items-center gap-2 sm:gap-4">
+        <div key={unit.label} className="relative">
           <div className="text-center">
-            <div className="w-12 h-14 sm:w-16 sm:h-20 bg-surface border border-surface-light rounded-lg flex items-center justify-center">
-              <span className="font-mono text-2xl sm:text-4xl font-bold text-accent">
+            <div className="flex h-20 w-full min-w-[86px] items-center justify-center rounded-2xl border border-accent/25 bg-gradient-to-b from-primary-light/30 to-primary-dark/70 shadow-lg shadow-primary-dark/25 sm:h-24">
+              <span className="font-mono text-3xl font-bold tracking-tight text-accent sm:text-5xl">
                 {String(unit.value).padStart(2, '0')}
               </span>
             </div>
-            <p className="text-xs text-text-secondary mt-1">{unit.label}</p>
+            <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.24em] text-text-secondary">
+              {unit.label}
+            </p>
           </div>
-          {index < timeUnits.length - 1 && (
-            <span className="text-2xl sm:text-4xl font-bold text-accent/50 animate-pulse">:</span>
+          {index < timeUnits.length - 1 && index % 2 === 0 && (
+            <span className="pointer-events-none absolute -right-2 top-7 hidden text-3xl font-bold text-accent/40 sm:block">
+              :
+            </span>
           )}
         </div>
       ))}

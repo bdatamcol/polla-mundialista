@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { Trophy, Users, Gift, TrendingUp, Calendar, Clock, ArrowRight, Star, Target } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { CountdownSimple } from '@/components/Countdown'
 import { RankingTable } from '@/components/RankingTable'
+import { UpcomingMatchHero } from '@/components/UpcomingMatchHero'
 import { getTopUsers } from '@/actions/user-actions'
 import { getNextMatch } from '@/actions/match-actions'
 import { formatDateTime } from '@/lib/utils'
+import { maybeLazySyncResults } from '@/lib/lazy-sync'
 
 export default async function HomePage() {
   const [topUsers, nextMatch] = await Promise.all([
@@ -17,7 +18,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary-dark via-background to-background">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary via-background to-background-dark">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
@@ -27,7 +28,7 @@ export default async function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-6">
+            <div className="inline-flex items-center gap-2 bg-accent text-black px-4 py-2 rounded-full mb-6 shadow-lg shadow-accent/20">
               <Star className="w-4 h-4" />
               <span className="text-sm font-medium">Mundial 2026 - Estados Unidos, México, Canadá</span>
             </div>
@@ -42,7 +43,7 @@ export default async function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/registro">
+              <Link href="/registro" scroll>
                 <Button size="lg" className="w-full sm:w-auto">
                   Participar Ahora
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -58,15 +59,8 @@ export default async function HomePage() {
 
           {/* Countdown */}
           {nextMatch && (
-            <div className="text-center mb-12">
-              <p className="text-text-secondary text-sm mb-4">Próximo partido en:</p>
-              <CountdownSimple targetDate={nextMatch.matchDate} />
-              <p className="mt-4 font-heading text-lg text-white">
-                {nextMatch.homeTeam} vs {nextMatch.awayTeam}
-              </p>
-              <p className="text-text-secondary text-sm">
-                {nextMatch.group} • {new Date(nextMatch.matchDate).toISOString().slice(0, 10)}
-              </p>
+            <div className="mb-12">
+              <UpcomingMatchHero match={nextMatch} />
             </div>
           )}
         </div>
@@ -121,41 +115,35 @@ export default async function HomePage() {
       </section>
 
       {/* Points System */}
-      <section className="py-16 bg-surface-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-4">
-            SISTEMA DE <span className="text-accent">PUNTOS</span>
-          </h2>
-          <p className="text-center text-text-secondary mb-12 max-w-2xl mx-auto">
-            Predice los marcadores exactos y a los finalistas. Cada acierto se premia.
-          </p>
+        <section className="py-16 bg-gradient-to-b from-background to-surface-dark">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-display text-3xl md:text-4xl text-center text-white mb-4">
+              SISTEMA DE <span className="text-accent">PUNTOS</span>
+            </h2>
+            <p className="text-center text-text-secondary mb-12 max-w-2xl mx-auto">
+              Solo se otorgan puntos si aciertas el marcador exacto. A mayor fase, mayor la recompensa.
+            </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <Card className="text-center border-success/30">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
-                <Target className="w-8 h-8 text-success" />
-              </div>
-              <p className="font-mono text-3xl font-bold text-success mb-2">5 pts</p>
-              <p className="text-text-secondary text-sm">
-                Por partido
-              </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Acertar marcador exacto
-              </p>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <Card className="text-center border-accent/30">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                  <span className="text-2xl font-mono font-bold text-accent">5</span>
+                </div>
+                <CardTitle className="text-accent mb-2">Fase 1</CardTitle>
+                <p className="text-text-secondary text-sm">
+                  Grupos + Octavos de final
+                </p>
+              </Card>
 
-            <Card className="text-center border-primary/30">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-primary-light" />
-              </div>
-              <p className="font-mono text-3xl font-bold text-primary-light mb-2">10 pts</p>
-              <p className="text-text-secondary text-sm">
-                Por semifinalista
-              </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Por cada equipo correcto (4)
-              </p>
-            </Card>
+              <Card className="text-center border-primary-light/40">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-light/25 flex items-center justify-center">
+                  <span className="text-2xl font-mono font-bold text-white">10</span>
+                </div>
+                <CardTitle className="text-white mb-2">Fase 2</CardTitle>
+                <p className="text-text-secondary text-sm">
+                  Cuartos + Semifinales
+                </p>
+              </Card>
 
             <Card className="text-center border-accent/30 glow-accent">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
@@ -198,7 +186,7 @@ export default async function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-primary to-primary-dark">
+      <section className="py-16 bg-gradient-to-r from-primary-dark via-primary to-primary-light">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display text-3xl md:text-4xl text-white mb-4">
             ¿LISTO PARA EL MUNDIAL?
@@ -206,7 +194,7 @@ export default async function HomePage() {
           <p className="text-text-secondary text-lg mb-8">
             Únete a la competencia más grande de predicciones del Mundial 2026.
           </p>
-          <Link href="/registro">
+          <Link href="/registro" scroll>
             <Button size="lg" className="animate-pulse-glow">
               <Calendar className="mr-2 w-5 h-5" />
               Regístrate Ahora

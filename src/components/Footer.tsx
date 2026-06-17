@@ -5,7 +5,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-surface-dark border-t border-surface-light">
+    <footer className="bg-background/90 border-t border-accent/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -58,12 +58,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-surface-light flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mt-8 pt-8 border-t border-accent/20 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-text-secondary text-sm">
             © {currentYear} Town Center. Todos los derechos reservados.
           </p>
           <p className="text-text-secondary text-sm flex items-center gap-1">
-            Hecho con <Heart className="w-4 h-4 text-error" /> para los aficionados
+            Hecho con <Heart className="w-4 h-4 text-accent" /> para los aficionados
           </p>
         </div>
       </div>

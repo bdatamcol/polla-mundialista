@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { UserPlus, Mail, Lock, User, Check } from 'lucide-react'
@@ -18,6 +18,24 @@ export default function RegistroPage() {
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  useLayoutEffect(() => {
+    history.scrollRestoration = 'manual'
+    const resetScroll = () => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+
+    resetScroll()
+    const frame = requestAnimationFrame(resetScroll)
+    const timeout = window.setTimeout(resetScroll, 50)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(timeout)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,7 +71,7 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="bg-background flex items-center justify-center px-4 py-10 md:py-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 mb-4">
@@ -158,7 +176,7 @@ export default function RegistroPage() {
               />
               <label htmlFor="terms" className="text-sm text-text-secondary">
                 Acepto los{' '}
-                <Link href="/reglamento" className="text-accent hover:underline">
+                <Link href="/reglamento" scroll className="text-accent hover:underline">
                   términos y condiciones
                 </Link>{' '}
                 de la Polla Mundialista Town Center.
@@ -179,7 +197,7 @@ export default function RegistroPage() {
           <div className="mt-6 text-center">
             <p className="text-text-secondary text-sm">
               ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="text-accent hover:underline">
+              <Link href="/login" scroll className="text-accent hover:underline">
                 Inicia sesión aquí
               </Link>
             </p>
