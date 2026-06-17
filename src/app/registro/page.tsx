@@ -89,7 +89,7 @@ export default function RegistroPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                <User className="absolute left-3 top-3/4 -translate-y-3/4 w-5 h-5 text-text-secondary" />
                 <Input
                   type="text"
                   label="Nombre completo"
@@ -102,7 +102,7 @@ export default function RegistroPage() {
               </div>
 
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                <Mail className="absolute left-3 top-3/4 -translate-y-3/4 w-5 h-5 text-text-secondary" />
                 <Input
                   type="email"
                   label="Correo electrónico"
@@ -115,7 +115,7 @@ export default function RegistroPage() {
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                <Lock className="absolute left-3 top-3/4 -translate-y-3/4 w-5 h-5 text-text-secondary" />
                 <Input
                   type="password"
                   label="Contraseña"
@@ -129,7 +129,7 @@ export default function RegistroPage() {
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                <Lock className="absolute left-3 top-3/4 -translate-y-3/4 w-5 h-5 text-text-secondary" />
                 <Input
                   type="password"
                   label="Confirmar contraseña"

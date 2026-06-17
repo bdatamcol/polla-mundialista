@@ -53,13 +53,11 @@ export function Navbar(props: NavbarProps) {
   return (
     <nav className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md border-b border-accent/20 shadow-lg shadow-primary-dark/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-28">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Trophy className="w-8 h-8 text-accent" />
-            <span className="font-display text-xl text-white hidden sm:block">
-              POLLA MUNDIALISTA
-            </span>
+            <img src="polla-mundialista.png" alt="POLLA MUNDIALISTA" className="w-24 h-24" />
+           
           </Link>
 
           {/* Desktop Navigation */}

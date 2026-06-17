@@ -31,11 +31,7 @@ export function Footer() {
                   Ranking
                 </Link>
               </li>
-              <li>
-                <Link href="/premios" className="text-text-secondary text-sm hover:text-accent transition-colors">
-                  Premios
-                </Link>
-              </li>
+              
               <li>
                 <Link href="/reglamento" className="text-text-secondary text-sm hover:text-accent transition-colors">
                   Reglamento
@@ -46,13 +42,12 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-heading font-semibold text-text-primary mb-4">Contacto</h4>
+            <h4 className="font-heading font-semibold text-text-primary mb-4">Premios</h4>
             <ul className="space-y-2">
-              <li className="text-text-secondary text-sm">
-                ¿Tienes preguntas?
-              </li>
-              <li className="text-accent text-sm">
-                polla@towncenter.com
+              <li>
+                <Link href="/premios" className="text-text-secondary text-sm hover:text-accent transition-colors">
+                  Ver Premios
+                </Link>
               </li>
             </ul>
           </div>
