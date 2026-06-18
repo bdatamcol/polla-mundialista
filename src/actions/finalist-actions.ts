@@ -117,6 +117,10 @@ export async function saveFinalistPrediction(data: {
     return { success: false, error: 'Debes iniciar sesión' }
   }
 
+  if (!user.isActive) {
+    return { success: false, error: 'Tu cuenta está desactivada. No puedes hacer predicciones.' }
+  }
+
   // Verificar que no esté cerrada
   const locked = await isFinalistPredictionLocked()
   if (locked) {

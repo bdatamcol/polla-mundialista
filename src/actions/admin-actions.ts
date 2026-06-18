@@ -219,16 +219,59 @@ export async function getAllUsers() {
       id: true,
       name: true,
       email: true,
+      cedula: true,
+      parentesco: true,
       role: true,
+      isActive: true,
+      blockedAt: true,
+      blockReason: true,
       totalPoints: true,
       exactScores: true,
       correctWinners: true,
+      finalistPoints: true,
       createdAt: true,
       _count: {
         select: { predictions: true },
       },
     },
   })
+}
+
+export async function toggleUserActive(
+  userId: string,
+  isActive: boolean,
+  blockReason?: string
+) {
+  const admin = await isAdmin()
+  if (!admin) {
+    return { success: false, error: 'No tienes permisos de administrador' }
+  }
+
+  // Prevenir que el admin se bloquee a sí mismo
+  const currentUser = await getCurrentUser()
+  if (currentUser?.id === userId && !isActive) {
+    return { success: false, error: 'No puedes desactivar tu propia cuenta' }
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive,
+      blockedAt: isActive ? null : new Date(),
+      blockReason: isActive ? null : (blockReason?.trim() || null),
+    },
+  })
+
+  await prisma.auditLog.create({
+    data: {
+      action: isActive ? 'ACTIVATE_USER' : 'BLOCK_USER',
+      userId: currentUser?.id,
+      details: { targetUserId: userId, blockReason: blockReason || null },
+    },
+  })
+
+  revalidatePath('/admin/usuarios')
+  return { success: true, user: updated }
 }
 
 export async function createPrize(data: {
