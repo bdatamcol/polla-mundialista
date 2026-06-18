@@ -50,6 +50,10 @@ export async function createPrediction(data: {
     return { success: false, error: 'Debes iniciar sesión' }
   }
 
+  if (!user.isActive) {
+    return { success: false, error: 'Tu cuenta está desactivada. No puedes hacer predicciones.' }
+  }
+
   const match = await prisma.match.findUnique({
     where: { id: data.matchId },
   })
@@ -101,6 +105,10 @@ export async function updatePrediction(
   const user = await getCurrentUser()
   if (!user) {
     return { success: false, error: 'Debes iniciar sesión' }
+  }
+
+  if (!user.isActive) {
+    return { success: false, error: 'Tu cuenta está desactivada. No puedes editar predicciones.' }
   }
 
   const prediction = await prisma.prediction.findUnique({

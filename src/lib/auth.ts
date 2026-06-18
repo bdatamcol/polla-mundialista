@@ -51,12 +51,50 @@ export async function getCurrentUser() {
       name: true,
       email: true,
       role: true,
+      isActive: true,
       totalPoints: true,
       exactScores: true,
       correctWinners: true,
       createdAt: true,
     },
   })
+
+  // Si la cuenta fue desactivada, retornar null
+  // La sesión se destruirá en el próximo login o al cerrar sesión
+  if (user && !user.isActive) {
+    return null
+  }
+
+  return user
+}
+
+/**
+ * Versión que también destruye la sesión si el usuario está inactivo.
+ * SOLO usar en Server Actions o Route Handlers, nunca en layouts/pages.
+ */
+export async function getCurrentUserOrDestroy() {
+  const session = await getSession()
+  if (!session) return null
+
+  const user = await prisma.user.findUnique({
+    where: { id: session },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isActive: true,
+      totalPoints: true,
+      exactScores: true,
+      correctWinners: true,
+      createdAt: true,
+    },
+  })
+
+  if (user && !user.isActive) {
+    await destroySession()
+    return null
+  }
 
   return user
 }
@@ -112,6 +150,14 @@ export async function loginUser(data: LoginInput) {
 
   if (!user) {
     return { success: false, error: 'Credenciales inválidas' }
+  }
+
+  // Verificar si la cuenta está activa
+  if (!user.isActive) {
+    return {
+      success: false,
+      error: 'Tu cuenta ha sido desactivada por un administrador. Contacta al soporte.',
+    }
   }
 
   const isValidPassword = await verifyPassword(data.password, user.password)

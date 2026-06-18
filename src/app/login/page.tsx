@@ -96,6 +96,15 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <Link
+                href="/restablecer-contrasena"
+                className="text-sm text-accent hover:text-accent/80 transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
             {error && (
               <p className="text-error text-sm text-center bg-error/10 py-2 rounded-lg">
                 {error}

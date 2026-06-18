@@ -37,18 +37,39 @@ model User {
   // Parentesco / relación con Town Center (campo libre)
   parentesco          String?
   role                Role                  @default(USER)
+  // Estado del usuario: true = activo (puede participar), false = bloqueado
+  isActive            Boolean               @default(true)
+  blockedAt           DateTime?
+  blockReason         String?
   totalPoints         Int                   @default(0)
   exactScores         Int                   @default(0)
   correctWinners      Int                   @default(0)
   finalistPoints      Int                   @default(0)
   predictions         Prediction[]
   finalistPrediction  FinalistPrediction?
+  passwordResetTokens PasswordResetToken[]
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 
   @@index([email])
   @@index([cedula])
   @@index([totalPoints])
+  @@index([isActive])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // Predicción de finalistas: el usuario elige qué 4 equipos llegan a
