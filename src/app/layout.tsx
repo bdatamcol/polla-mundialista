@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import './globals.css'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { ParentescoReminderModal } from '@/components/ParentescoReminderModal'
 import { getCurrentUser, getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -49,6 +50,7 @@ export default async function RootLayout({
        <Navbar user={user ? { ...user, password: '', updatedAt: new Date(), finalistPoints: (user as any).finalistPoints ?? 0 } as any : null} />
         <main className="flex-1">{children}</main>
         <Footer />
+        {user && !user.parentesco && <ParentescoReminderModal userName={user.name} />}
       </body>
     </html>
   )
