@@ -57,7 +57,11 @@ export default async function EditPredictionPage({ params }: PageProps) {
             match={match}
             existingPrediction={
               existingPrediction
-                ? { homeGoals: existingPrediction.homeGoals, awayGoals: existingPrediction.awayGoals }
+                ? {
+                    id: existingPrediction.id,
+                    homeGoals: existingPrediction.homeGoals,
+                    awayGoals: existingPrediction.awayGoals,
+                  }
                 : null
             }
           />
