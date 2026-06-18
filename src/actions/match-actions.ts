@@ -140,30 +140,17 @@ export async function getTodayMatches() {
   const TZ_OFFSET_MINUTES = -5 * 60 // GMT-5, sin DST
   const now = new Date()
   const localNow = new Date(now.getTime() + TZ_OFFSET_MINUTES * 60_000)
-  const startLocal = new Date(Date.UTC(
-    localNow.getUTCFullYear(),
-    localNow.getUTCMonth(),
-    localNow.getUTCDate(),
-    0, 0, 0, 0
-  ))
-  const endLocal = new Date(Date.UTC(
-    localNow.getUTCFullYear(),
-    localNow.getUTCMonth(),
-    localNow.getUTCDate(),
-    23, 59, 59, 999
-  ))
-  const startUtc = new Date(startLocal.getTime() - TZ_OFFSET_MINUTES * 60_000)
-  const endUtc = new Date(endLocal.getTime() - TZ_OFFSET_MINUTES * 60_000)
+  const todayStr = `${localNow.getUTCFullYear()}-${String(localNow.getUTCMonth() + 1).padStart(2, '0')}-${String(localNow.getUTCDate()).padStart(2, '0')}`
 
-  return prisma.match.findMany({
-    where: {
-      ...TBD_FILTER,
-      matchDate: {
-        gte: startUtc,
-        lte: endUtc,
-      },
-    },
+  const matches = await prisma.match.findMany({
+    where: TBD_FILTER,
     orderBy: { matchDate: 'asc' },
+  })
+
+  return matches.filter((m) => {
+    const lm = new Date(new Date(m.matchDate).getTime() + TZ_OFFSET_MINUTES * 60_000)
+    const dStr = `${lm.getUTCFullYear()}-${String(lm.getUTCMonth() + 1).padStart(2, '0')}-${String(lm.getUTCDate()).padStart(2, '0')}`
+    return dStr === todayStr
   })
 }
 
