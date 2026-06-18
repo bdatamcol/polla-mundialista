@@ -1,13 +1,11 @@
 import { redirect } from 'next/navigation'
-import { Calendar, Filter } from 'lucide-react'
+import { Calendar, Clock } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { MatchCard } from '@/components/MatchCard'
 import { getCurrentUser } from '@/lib/auth'
-import { getMatches, getMatchesByGroup } from '@/actions/match-actions'
+import { getMatches, getMatchesByGroup, getTodayMatches } from '@/actions/match-actions'
 import { getUserPredictions } from '@/actions/prediction-actions'
-import { isMatchLocked } from '@/lib/utils'
 
 export default async function PrediccionesPage() {
   const user = await getCurrentUser()
@@ -15,14 +13,17 @@ export default async function PrediccionesPage() {
     redirect('/login')
   }
 
-  const [matches, predictions] = await Promise.all([
+  const [matches, predictions, todayMatches] = await Promise.all([
     getMatches(),
     getUserPredictions(user.id),
+    getTodayMatches(),
   ])
 
   const predictionsByMatch = new Map(
     predictions.map((p) => [p.matchId, p])
   )
+
+  const todayMatchIds = new Set(todayMatches.map((m) => m.id))
 
   const groupedMatches = await getMatchesByGroup()
   const groups = Object.keys(groupedMatches).sort((a, b) => {
@@ -71,10 +72,39 @@ export default async function PrediccionesPage() {
           </Card>
         </div>
 
+        {/* Matches Today */}
+        {todayMatches.length > 0 && (
+          <section className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <Clock className="w-5 h-5 text-accent" />
+              <h2 className="font-display text-xl text-accent">PARTIDOS DE HOY</h2>
+              <Badge variant="warning">{todayMatches.length} partidos</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {todayMatches.map((match) => {
+                const prediction = predictionsByMatch.get(match.id)
+                return (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    prediction={prediction}
+                    userPrediction={
+                      prediction
+                        ? { homeGoals: prediction.homeGoals, awayGoals: prediction.awayGoals }
+                        : null
+                    }
+                  />
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Matches by Group */}
         <div className="space-y-8">
           {groups.map((group) => {
-            const groupMatches = groupedMatches[group]
+            const groupMatches = groupedMatches[group].filter((m) => !todayMatchIds.has(m.id))
+            if (groupMatches.length === 0) return null
             return (
               <section key={group}>
                 <div className="flex items-center gap-3 mb-4">

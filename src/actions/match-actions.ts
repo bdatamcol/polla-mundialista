@@ -136,6 +136,23 @@ export async function deleteMatch(id: string) {
   revalidatePath('/predicciones')
 }
 
+export async function getTodayMatches() {
+  const now = new Date()
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+
+  return prisma.match.findMany({
+    where: {
+      ...TBD_FILTER,
+      matchDate: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    },
+    orderBy: { matchDate: 'asc' },
+  })
+}
+
 export async function getPendingMatches() {
   return prisma.match.findMany({
     where: {

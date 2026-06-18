@@ -7,12 +7,13 @@ import { Badge } from '@/components/ui/Badge'
 import { RankingTable } from '@/components/RankingTable'
 import { MatchCard } from '@/components/MatchCard'
 import { CountdownSimple } from '@/components/Countdown'
+import { TodayMatchesSection } from '@/components/TodayMatchesSection'
 import { getCurrentUser } from '@/lib/auth'
 import { maybeLazySyncResults } from '@/lib/lazy-sync'
 import { getMyFinalistPrediction, isFinalistPredictionLocked } from '@/actions/finalist-actions'
 import { getUserPosition } from '@/actions/user-actions'
 import { getPredictionStats } from '@/actions/prediction-actions'
-import { getMatches, getNextMatch } from '@/actions/match-actions'
+import { getMatches, getNextMatch, getTodayMatches } from '@/actions/match-actions'
 import { getTopUsers } from '@/actions/user-actions'
 import { getUserPredictions } from '@/actions/prediction-actions'
 import { getFlagEmoji, getFlagUrl } from '@/lib/flags'
@@ -52,7 +53,7 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const [position, stats, nextMatch, topUsers, predictions, finalistPred, finalistLocked] = await Promise.all([
+  const [position, stats, nextMatch, topUsers, predictions, finalistPred, finalistLocked, todayMatches] = await Promise.all([
     getUserPosition(user.id),
     getPredictionStats(user.id),
     getNextMatch(),
@@ -60,6 +61,7 @@ export default async function DashboardPage() {
     getUserPredictions(user.id),
     getMyFinalistPrediction(),
     isFinalistPredictionLocked(),
+    getTodayMatches(),
   ])
 
   // Get upcoming matches without predictions
@@ -119,6 +121,9 @@ export default async function DashboardPage() {
             <p className="text-text-secondary text-sm">Ganadores Acertados</p>
           </Card>
         </div>
+
+        {/* Today's Matches - full width */}
+        <TodayMatchesSection matches={todayMatches} predictions={predictions as any} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
