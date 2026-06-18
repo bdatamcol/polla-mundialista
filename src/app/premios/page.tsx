@@ -52,7 +52,8 @@ export default async function PremiosPage() {
             <li>• El participante debe haber completado todas las predicciones</li>
             <li>• En caso de empate, se considera la fecha de registro más antigua</li>
             <li>• Los premios son personales y no transferibles</li>
-            <li>• Town Center se reserva el derecho de modificar los premios</li>
+            <li>• TownCenter se reserva el derecho de modificar los premios</li>
+            <li>• Ningún otro familiar que NO sea conyuge, padres, hermanos e hijos de un colaborador será excluido de la actividad y no tendrá derecho a premio, en caso de resultar ganador.</li>
           </ul>
         </div>
       </div>

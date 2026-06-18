@@ -81,9 +81,16 @@ export default async function ReglamentoPage() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-sm font-bold">2</span>
-                  <span>Demostrar parentesco para reclamar el obsequio. En caso de resultar ganador</span>
+                  <span>Demostrar parentesco para reclamar el obsequio. En caso de resultar ganador.</span>
+                  
                 </li>
               </ol>
+              <li className="flex gap-3 mt-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-sm font-bold">3</span>
+                <span>
+                  Ningún otro familiar que <strong className="text-white">NO</strong> se encuentre en esta lista será excluido de la actividad y no tendrá derecho a premio.
+                </span>
+              </li>
             </Card>
           </section>
 
@@ -134,15 +141,15 @@ export default async function ReglamentoPage() {
             </h3>
             <Card>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/20">
+                <div className="flex items-center justify-between p-4 bg-primary-light/15 rounded-lg border border-primary-light/35">
                   <div>
-                    <CardTitle className="text-primary-light">Semifinalista correcto</CardTitle>
+                    <CardTitle className="text-white">Semifinalista correcto</CardTitle>
                     <p className="text-text-secondary text-sm">
                       Por cada uno de los 4 equipos que aciertes que llega a semifinales
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono text-3xl font-bold text-primary-light">10</span>
+                    <span className="font-mono text-3xl font-bold text-white">10</span>
                     <p className="text-text-secondary text-xs">pts c/u</p>
                     <p className="text-xs text-text-secondary mt-1">Máx. 40 pts</p>
                   </div>
@@ -326,7 +333,7 @@ export default async function ReglamentoPage() {
                 </li>
                 <li className="flex gap-3">
                   <span className="text-warning">•</span>
-                  <span>Town Center se reserva el derecho de modificar este reglamento.</span>
+                  <span>TownCenter se reserva el derecho de modificar este reglamento.</span>
                 </li>
               </ul>
             </Card>

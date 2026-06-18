@@ -125,12 +125,16 @@ export default function RegistroPage() {
                 <Input
                   type="text"
                   label="Parentesco / Relación (opcional)"
-                  placeholder="Ej: Titular, Cónyuge, Hijo, Familiar..."
+                  placeholder="Ej: Mamá de lissette calderón"
                   value={parentesco}
                   onChange={(e) => setParentesco(e.target.value)}
                   className="pl-10"
                   maxLength={80}
                 />
+              </div>
+              <div className="flex items-start gap-2 mt-2 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-xs font-bold flex-shrink-0 mt-0.5">!</span>
+                <p className="text-sm text-text-secondary">El parentesco debe ser cónyuge, padres, hermanos o hijos de un colaborador. Especifica el nombre del colaborador correspondiente.</p>
               </div>
 
               <div className="relative">
