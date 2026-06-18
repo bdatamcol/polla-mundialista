@@ -1,8 +1,28 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import type { RankingEntry } from '@/types'
+
+const parentescoSchema = z
+  .string()
+  .max(80, 'El parentesco es demasiado largo')
+  .transform((val) => (val && val.trim().length > 0 ? val.trim() : null))
+
+export async function updateMyParentesco(parentesco: string) {
+  const user = await getCurrentUser()
+  if (!user) return { success: false, error: 'Debes iniciar sesion' }
+  const validation = parentescoSchema.safeParse(parentesco)
+  if (!validation.success) return { success: false, error: validation.error.errors[0].message }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { parentesco: validation.data },
+  })
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
 
 export async function getRanking(options?: { limit?: number; offset?: number }) {
   const limit = options?.limit ?? 50
