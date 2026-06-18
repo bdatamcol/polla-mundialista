@@ -4,18 +4,18 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { createPrediction, getPrediction } from '@/actions/prediction-actions'
+import { createPrediction, updatePrediction } from '@/actions/prediction-actions'
 import type { Match } from '@/types'
 
 interface PredictionFormProps {
   match: Match
-  existingPrediction?: { homeGoals: number; awayGoals: number } | null
+  existingPrediction?: { id: string; homeGoals: number; awayGoals: number } | null
 }
 
 export function PredictionForm({ match, existingPrediction }: PredictionFormProps) {
   const router = useRouter()
-  const [homeGoals, setHomeGoals] = useState(existingPrediction?.homeGoals ?? '')
-  const [awayGoals, setAwayGoals] = useState(existingPrediction?.awayGoals ?? '')
+  const [homeGoals, setHomeGoals] = useState<number | string>(existingPrediction?.homeGoals ?? '')
+  const [awayGoals, setAwayGoals] = useState<number | string>(existingPrediction?.awayGoals ?? '')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -46,11 +46,17 @@ export function PredictionForm({ match, existingPrediction }: PredictionFormProp
       return
     }
 
-    const result = await createPrediction({
-      matchId: match.id,
-      homeGoals: home,
-      awayGoals: away,
-    })
+    // Si ya existe una predicción, la actualizamos; si no, la creamos
+    const result = existingPrediction
+      ? await updatePrediction(existingPrediction.id, {
+          homeGoals: home,
+          awayGoals: away,
+        })
+      : await createPrediction({
+          matchId: match.id,
+          homeGoals: home,
+          awayGoals: away,
+        })
 
     if (!result.success) {
       setError(result.error || 'Error al guardar')
