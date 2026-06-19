@@ -60,12 +60,7 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
   const top3 = ranking.filter((e) => e.position <= 3)
   const rest = ranking.filter((e) => e.position > 3)
 
-  // Reordenar top 3 para el podio: 2do - 1ro - 3ro
-  const podiumOrder = [
-    top3.find((e) => e.position === 2),
-    top3.find((e) => e.position === 1),
-    top3.find((e) => e.position === 3),
-  ].filter(Boolean) as RankingEntry[]
+  const podiumEntries = [...top3].sort((a, b) => a.position - b.position)
   const compactPodiumOrder = [...top3].sort((a, b) => a.position - b.position)
   const isCompact = variant === 'compact'
 
@@ -151,14 +146,20 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
             </div>
           ) : (
             <div className="relative grid max-w-4xl grid-cols-1 gap-4 items-end mx-auto sm:grid-cols-2 md:grid-cols-3">
-              {podiumOrder.map((entry) => {
+              {podiumEntries.map((entry) => {
                 const style = PODIUM_STYLES[entry.position as 1 | 2 | 3]
                 const Icon = style.icon
                 const isMe = entry.id === currentUserId
+                const responsiveOrder =
+                  entry.position === 1
+                    ? 'order-1 md:order-2'
+                    : entry.position === 2
+                      ? 'order-2 md:order-1'
+                      : 'order-3'
                 return (
                   <Card
                     key={entry.id}
-                    className={`${style.bg} ${style.border} ${style.ring} ${style.height} ${style.offset} px-5 py-6 text-center relative overflow-hidden transition-transform duration-300 hover:-translate-y-1`}
+                    className={`${responsiveOrder} ${style.bg} ${style.border} ${style.ring} ${style.height} ${style.offset} px-5 py-6 text-center relative overflow-hidden transition-transform duration-300 hover:-translate-y-1`}
                   >
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-accent/80 to-transparent" />
                     <div className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-secondary">
