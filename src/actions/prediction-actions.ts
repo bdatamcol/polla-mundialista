@@ -26,6 +26,55 @@ export async function getUserPredictions(userId?: string): Promise<PredictionWit
   })
 }
 
+/**
+ * Versión paginada de getUserPredictions.
+ * Retorna predicciones del usuario actual con metadata de paginación.
+ */
+export async function getMyPredictionsPaginated(options: {
+  page?: number
+  pageSize?: number
+  status?: 'PENDING' | 'LIVE' | 'FINISHED' | 'ALL'
+}) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser) {
+    return { predictions: [], total: 0, page: 1, pageSize: 20, totalPages: 0 }
+  }
+
+  const page = Math.max(1, options.page || 1)
+  const pageSize = Math.min(100, Math.max(1, options.pageSize || 20))
+  const skip = (page - 1) * pageSize
+
+  // Construir filtro de match status si se especifica
+  const matchFilter =
+    options.status && options.status !== 'ALL'
+      ? { match: { status: options.status } }
+      : {}
+
+  const where = {
+    userId: currentUser.id,
+    ...matchFilter,
+  }
+
+  const [predictions, total] = await Promise.all([
+    prisma.prediction.findMany({
+      where,
+      include: { match: true },
+      orderBy: { match: { matchDate: 'desc' } },
+      skip,
+      take: pageSize,
+    }),
+    prisma.prediction.count({ where }),
+  ])
+
+  return {
+    predictions,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  }
+}
+
 export async function getPrediction(userId: string, matchId: string) {
   return prisma.prediction.findUnique({
     where: {

@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { RankingTable } from '@/components/RankingTable'
 import { MatchCard } from '@/components/MatchCard'
+import { MyPredictionsTable } from '@/components/MyPredictionsTable'
 import { getCurrentUser } from '@/lib/auth'
 import { getUserPosition } from '@/actions/user-actions'
-import { getPredictionStats, getUserPredictions } from '@/actions/prediction-actions'
+import { getPredictionStats, getUserPredictions, getMyPredictionsPaginated } from '@/actions/prediction-actions'
 import { getRanking } from '@/actions/user-actions'
 import { formatDate } from '@/lib/utils'
 import { logoutUser } from '@/actions/auth-actions'
@@ -19,11 +20,12 @@ export default async function PerfilPage() {
     redirect('/login')
   }
 
-  const [position, stats, predictions, ranking] = await Promise.all([
+  const [position, stats, predictions, ranking, paginated] = await Promise.all([
     getUserPosition(user.id),
     getPredictionStats(user.id),
     getUserPredictions(user.id),
     getRanking({ limit: 100 }),
+    getMyPredictionsPaginated({ page: 1, pageSize: 20 }),
   ])
 
   const recentPredictions = predictions.slice(0, 5)
@@ -173,6 +175,16 @@ export default async function PerfilPage() {
                   </Card>
                 )}
               </div>
+            </section>
+
+            {/* Tabla paginada de predicciones */}
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-xl text-white">
+                  HISTORIAL <span className="text-accent">DE PREDICCIONES</span>
+                </h3>
+              </div>
+              <MyPredictionsTable initialData={paginated} />
             </section>
           </div>
         </div>
