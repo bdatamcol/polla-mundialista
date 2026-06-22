@@ -9,6 +9,8 @@ export interface RankingEntry {
   totalPoints: number
   exactScores: number
   correctWinners: number
+  /** Total de aciertos: marcadores exactos + ganadores correctos */
+  hits: number
   predictionsCount: number
   createdAt: Date
 }

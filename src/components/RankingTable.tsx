@@ -195,12 +195,12 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-3 text-left">
                       <div className="rounded-xl bg-black/10 px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-[0.25em] text-text-secondary">Exactos</p>
-                        <p className="mt-1 font-mono text-lg font-bold text-white">{entry.exactScores}</p>
+                        <p className="text-[10px] uppercase tracking-[0.25em] text-text-secondary">Aciertos</p>
+                        <p className="mt-1 font-mono text-lg font-bold text-accent">{entry.hits}</p>
                       </div>
                       <div className="rounded-xl bg-black/10 px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-[0.25em] text-text-secondary">Predic.</p>
-                        <p className="mt-1 font-mono text-lg font-bold text-white">{entry.predictionsCount}</p>
+                        <p className="text-[10px] uppercase tracking-[0.25em] text-text-secondary">Exactos</p>
+                        <p className="mt-1 font-mono text-lg font-bold text-white">{entry.exactScores}</p>
                       </div>
                     </div>
                   </Card>
@@ -257,6 +257,12 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
                     {/* Detalles */}
                     {!isCompact && (
                       <div className="hidden sm:flex items-center gap-3 text-xs">
+                        <div className="text-center px-2">
+                          <p className="font-mono font-semibold text-accent">
+                            {entry.hits}
+                          </p>
+                          <p className="text-text-secondary">aciertos</p>
+                        </div>
                         <div className="text-center px-2">
                           <p className="font-mono font-semibold text-text-primary">
                             {entry.exactScores}

@@ -31,8 +31,10 @@ export async function getRanking(options?: { limit?: number; offset?: number }) 
   const users = await prisma.user.findMany({
     orderBy: [
       { totalPoints: 'desc' },
-      { exactScores: 'desc' },
+      // Desempate por cantidad de aciertos: correctWinners ya incluye
+      // los marcadores exactos (porque isCorrectWinner = true cuando isExactScore = true)
       { correctWinners: 'desc' },
+      { exactScores: 'desc' },
       { createdAt: 'asc' },
     ],
     select: {
@@ -57,6 +59,8 @@ export async function getRanking(options?: { limit?: number; offset?: number }) 
     totalPoints: user.totalPoints,
     exactScores: user.exactScores,
     correctWinners: user.correctWinners,
+    // Aciertos = correctWinners (que ya cuenta exacto + ganador correcto)
+    hits: user.correctWinners,
     predictionsCount: user._count.predictions,
     createdAt: user.createdAt,
   }))
@@ -83,17 +87,17 @@ export async function getUserPosition(userId: string): Promise<number> {
         { totalPoints: { gt: user.totalPoints } },
         {
           totalPoints: user.totalPoints,
-          exactScores: { gt: user.exactScores },
-        },
-        {
-          totalPoints: user.totalPoints,
-          exactScores: user.exactScores,
           correctWinners: { gt: user.correctWinners },
         },
         {
           totalPoints: user.totalPoints,
-          exactScores: user.exactScores,
           correctWinners: user.correctWinners,
+          exactScores: { gt: user.exactScores },
+        },
+        {
+          totalPoints: user.totalPoints,
+          correctWinners: user.correctWinners,
+          exactScores: user.exactScores,
           createdAt: { gt: user.createdAt },
         },
       ],

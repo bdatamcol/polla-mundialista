@@ -1,18 +1,12 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { User, Mail, Calendar, Trophy, Target, Star, LogOut, ExternalLink } from 'lucide-react'
+import { Trophy, Target, Star } from 'lucide-react'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { RankingTable } from '@/components/RankingTable'
 import { MatchCard } from '@/components/MatchCard'
 import { MyPredictionsTable } from '@/components/MyPredictionsTable'
 import { getCurrentUser } from '@/lib/auth'
-import { getUserPosition } from '@/actions/user-actions'
 import { getPredictionStats, getUserPredictions, getMyPredictionsPaginated } from '@/actions/prediction-actions'
-import { getRanking } from '@/actions/user-actions'
-import { formatDate } from '@/lib/utils'
-import { logoutUser } from '@/actions/auth-actions'
 
 export default async function PerfilPage() {
   const user = await getCurrentUser()
@@ -20,16 +14,13 @@ export default async function PerfilPage() {
     redirect('/login')
   }
 
-  const [position, stats, predictions, ranking, paginated] = await Promise.all([
-    getUserPosition(user.id),
+  const [stats, predictions, paginated] = await Promise.all([
     getPredictionStats(user.id),
     getUserPredictions(user.id),
-    getRanking({ limit: 100 }),
     getMyPredictionsPaginated({ page: 1, pageSize: 20 }),
   ])
 
   const recentPredictions = predictions.slice(0, 5)
-  const userRankEntry = ranking.find((r) => r.id === user.id)
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -44,102 +35,52 @@ export default async function PerfilPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start">
+          {/* Left Column - Stats */}
           <div className="lg:col-span-1">
-            <Card className="mb-6">
-              <div className="text-center mb-6">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                  <User className="w-12 h-12 text-accent" />
-                </div>
-                <h2 className="font-heading text-xl font-semibold text-text-primary">
-                  {user.name}
-                </h2>
-                <Badge variant={user.role === 'ADMIN' ? 'gold' : 'default'} className="mt-2">
-                  {user.role === 'ADMIN' ? 'Administrador' : 'Participante'}
-                </Badge>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-surface-light/50 rounded-lg">
-                  <Mail className="w-5 h-5 text-text-secondary" />
-                  <span className="text-sm text-text-primary truncate">{user.email}</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-surface-light/50 rounded-lg">
-                  <Calendar className="w-5 h-5 text-text-secondary" />
-                  <span className="text-sm text-text-primary">
-                    Desde {formatDate(user.createdAt)}
-                  </span>
-                </div>
-              </div>
-            </Card>
-
             {/* Stats */}
-            <Card className="mb-6">
-              <CardTitle className="mb-4">Estadísticas</CardTitle>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-surface-light/50 rounded-lg">
-                  <Trophy className="w-6 h-6 mx-auto mb-2 text-accent" />
-                  <p className="font-mono text-2xl font-bold text-text-primary">
-                    {user.totalPoints}
-                  </p>
-                  <p className="text-text-secondary text-xs">Puntos</p>
-                </div>
-                <div className="text-center p-3 bg-surface-light/50 rounded-lg">
-                  <Target className="w-6 h-6 mx-auto mb-2 text-success" />
-                  <p className="font-mono text-2xl font-bold text-text-primary">
-                    {user.exactScores}
-                  </p>
-                  <p className="text-text-secondary text-xs">Exactos</p>
-                </div>
-                <div className="text-center p-3 bg-surface-light/50 rounded-lg">
-                  <Star className="w-6 h-6 mx-auto mb-2 text-warning" />
-                  <p className="font-mono text-2xl font-bold text-text-primary">
-                    {user.correctWinners}
-                  </p>
-                  <p className="text-text-secondary text-xs">Acertados</p>
-                </div>
-                <div className="text-center p-3 bg-surface-light/50 rounded-lg">
-                  <User className="w-6 h-6 mx-auto mb-2 text-primary-light" />
-                  <p className="font-mono text-2xl font-bold text-text-primary">
-                    #{position}
-                  </p>
-                  <p className="text-text-secondary text-xs">Posición</p>
-                </div>
-              </div>
-            </Card>
+            <Card className="overflow-hidden border-accent/25 bg-gradient-to-br from-primary-dark via-primary to-primary-light lg:sticky lg:top-24">
+              <div className="relative">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,0,0.18),transparent_45%)]" />
+                <div className="relative p-5">
+                  <CardTitle className="mb-5 text-center text-white">Estadísticas</CardTitle>
 
-            {/* Actions */}
-            <Card>
-              <CardTitle className="mb-4">Acciones</CardTitle>
-              <div className="space-y-2">
-                <Link href="/predicciones">
-                  <Button variant="outline" className="w-full justify-start">
-                    Mis Predicciones
-                  </Button>
-                </Link>
-                <Link href="/ranking">
-                  <Button variant="outline" className="w-full justify-start">
-                    Ver Ranking
-                    <ExternalLink className="ml-2 w-4 h-4" />
-                  </Button>
-                </Link>
-                <form action={async () => {
-                  'use server'
-                  await logoutUser()
-                  redirect('/')
-                }}>
-                  <Button type="submit" variant="ghost" className="w-full justify-start text-error hover:bg-error/10">
-                    <LogOut className="mr-2 w-4 h-4" />
-                    Cerrar Sesión
-                  </Button>
-                </form>
+                  <div className="mb-6 text-center">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-accent/35 bg-accent/15 shadow-lg shadow-accent/10">
+                      <Trophy className="h-7 w-7 text-accent" />
+                    </div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.42em] text-accent/90">
+                      Tus Puntos
+                    </p>
+                    <p className="mt-3 font-mono text-5xl font-bold leading-none text-white">
+                      {user.totalPoints}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-sm">
+                      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-accent/15">
+                        <Star className="h-5 w-5 text-accent" />
+                      </div>
+                      <p className="font-mono text-3xl font-bold text-white">{stats.correctWinners}</p>
+                      <p className="mt-1 text-sm text-text-secondary">Acertados</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-sm">
+                      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-success/20">
+                        <Target className="h-5 w-5 text-success" />
+                      </div>
+                      <p className="font-mono text-3xl font-bold text-white">{stats.exactScores}</p>
+                      <p className="mt-1 text-sm text-text-secondary">Exactos</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
 
           {/* Right Column - Activity */}
-          <div className="lg:col-span-2">
+          <div className="min-w-0">
             {/* Recent Predictions */}
             <section className="mb-8">
               <div className="flex items-center justify-between mb-4">
