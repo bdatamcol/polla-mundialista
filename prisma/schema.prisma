@@ -48,6 +48,7 @@ model User {
   predictions         Prediction[]
   finalistPrediction  FinalistPrediction?
   passwordResetTokens PasswordResetToken[]
+  positionSnapshots   UserPositionSnapshot[]
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 
@@ -55,6 +56,21 @@ model User {
   @@index([cedula])
   @@index([totalPoints])
   @@index([isActive])
+}
+
+/// Snapshot de la posición en el ranking de un usuario en un instante dado.
+/// Permite calcular la tendencia (subió/bajó) comparando con el snapshot previo.
+model UserPositionSnapshot {
+  id          String   @id @default(uuid())
+  userId      String
+  position    Int
+  totalPoints Int
+  takenAt     DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, takenAt])
+  @@index([takenAt])
 }
 
 model PasswordResetToken {

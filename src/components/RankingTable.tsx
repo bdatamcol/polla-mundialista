@@ -1,6 +1,67 @@
-import { Crown, Medal, Sparkles, Trophy } from 'lucide-react'
+import { Crown, Medal, Sparkles, Trophy, TrendingUp, TrendingDown, Minus, Sparkle } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import type { RankingEntry } from '@/types'
+
+// Helper para renderizar la tendencia
+function TrendBadge({
+  trend,
+  size = 'sm',
+}: {
+  trend: RankingEntry['trend']
+  size?: 'sm' | 'md'
+}) {
+  const { direction, delta } = trend
+  const sizeClasses = size === 'md' ? 'h-4 w-4' : 'h-3 w-3'
+  const textClasses = size === 'md' ? 'text-xs' : 'text-[10px]'
+  const paddingClasses = size === 'md' ? 'px-1.5 py-0.5' : 'px-1 py-0.5'
+
+  if (direction === 'NEW') {
+    return (
+      <span
+        className={`inline-flex items-center gap-0.5 rounded-full border border-accent/30 bg-accent/15 font-bold uppercase tracking-wider text-accent ${textClasses} ${paddingClasses}`}
+        title="Nuevo en el ranking"
+      >
+        <Sparkle className={sizeClasses} />
+        Nuevo
+      </span>
+    )
+  }
+
+  if (direction === 'UP') {
+    return (
+      <span
+        className={`inline-flex items-center gap-0.5 rounded-full border border-success/30 bg-success/15 font-bold text-success ${textClasses} ${paddingClasses}`}
+        title={`Subió ${delta} posiciones (estaba #${trend.previousPosition})`}
+      >
+        <TrendingUp className={sizeClasses} />
+        {delta}
+      </span>
+    )
+  }
+
+  if (direction === 'DOWN') {
+    return (
+      <span
+        className={`inline-flex items-center gap-0.5 rounded-full border border-error/30 bg-error/15 font-bold text-error ${textClasses} ${paddingClasses}`}
+        title={`Bajó ${Math.abs(delta ?? 0)} posiciones (estaba #${trend.previousPosition})`}
+      >
+        <TrendingDown className={sizeClasses} />
+        {Math.abs(delta ?? 0)}
+      </span>
+    )
+  }
+
+  // SAME
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 rounded-full border border-white/15 bg-white/5 font-bold text-text-secondary ${textClasses} ${paddingClasses}`}
+      title="Sin cambios"
+    >
+      <Minus className={sizeClasses} />
+      =
+    </span>
+  )
+}
 
 interface RankingTableProps {
   ranking: RankingEntry[]
@@ -125,6 +186,7 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
                           <span className="text-[10px] uppercase tracking-[0.24em] text-text-secondary">
                             {style.badge}
                           </span>
+                          <TrendBadge trend={entry.trend} />
                         </div>
                         <p className="mt-1 truncate font-heading text-base font-bold text-white">
                           {entry.name}
@@ -179,9 +241,12 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
                       <p className="text-[11px] uppercase tracking-[0.3em] text-text-secondary">
                         {style.badge}
                       </p>
-                      <p className={`font-display text-4xl leading-none mt-2 ${style.iconColor}`}>
-                        {entry.position}
-                      </p>
+                      <div className="mt-2 flex items-center justify-center gap-2">
+                        <p className={`font-display text-4xl leading-none ${style.iconColor}`}>
+                          {entry.position}
+                        </p>
+                        <TrendBadge trend={entry.trend} size="md" />
+                      </div>
                     </div>
                     <p className="font-heading font-bold text-white text-base truncate px-2">
                       {entry.name}
@@ -228,11 +293,14 @@ export function RankingTable({ ranking, currentUserId, variant = 'default' }: Ra
                       isMe ? 'border border-accent/40 bg-accent/5 shadow-lg shadow-accent/5' : 'border border-transparent hover:bg-surface/60'
                     }`}
                   >
-                    {/* Posición */}
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-surface-light flex items-center justify-center">
-                      <span className="font-mono font-bold text-text-secondary text-sm">
-                        {entry.position}
-                      </span>
+                    {/* Posición + Tendencia */}
+                    <div className="flex flex-shrink-0 items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-surface-light flex items-center justify-center">
+                        <span className="font-mono font-bold text-text-secondary text-sm">
+                          {entry.position}
+                        </span>
+                      </div>
+                      <TrendBadge trend={entry.trend} />
                     </div>
 
                     {/* Nombre */}

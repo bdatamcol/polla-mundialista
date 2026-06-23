@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getWorldCupMatches, getLiveMatches, mapFootballMatchToMatch } from '@/lib/football-api'
 import { calculatePredictionPoints, DEFAULT_POINTS_CONFIG } from '@/lib/points'
 import { recalculateFinalistPoints } from '@/actions/finalist-actions'
+import { takeRankingSnapshot } from '@/actions/user-actions'
 
 // GET /api/sync/results - Actualiza resultados desde football-data.org
 // Este endpoint debería llamarse cada 1-5 minutos durante partidos en vivo
@@ -171,11 +172,22 @@ export async function GET() {
       finalistResult = await recalculateFinalistPoints()
     }
 
+    // Si se calcularon puntos nuevos, tomar snapshot del ranking para registrar la nueva posición
+    let snapshotTaken = false
+    if (results.scoresCalculated > 0) {
+      try {
+        await takeRankingSnapshot()
+        snapshotTaken = true
+      } catch (err) {
+        console.error('Error tomando snapshot:', err)
+      }
+    }
+
     // Log de auditoría
     await prisma.auditLog.create({
       data: {
         action: 'SYNC_RESULTS',
-        details: { results, finalistResult },
+        details: { results, finalistResult, snapshotTaken },
       },
     })
 

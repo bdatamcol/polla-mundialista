@@ -52,20 +52,105 @@ export async function getRanking(options?: { limit?: number; offset?: number }) 
     skip: offset,
   })
 
-  const ranking: RankingEntry[] = users.map((user, index) => ({
-    position: offset + index + 1,
-    id: user.id,
-    name: user.name,
-    totalPoints: user.totalPoints,
-    exactScores: user.exactScores,
-    correctWinners: user.correctWinners,
-    // Aciertos = correctWinners (que ya cuenta exacto + ganador correcto)
-    hits: user.correctWinners,
-    predictionsCount: user._count.predictions,
-    createdAt: user.createdAt,
-  }))
+  // Para cada usuario, obtener su snapshot más reciente (anterior al actual)
+  // para calcular la tendencia.
+  const userIds = users.map((u) => u.id)
+  const previousSnapshots = userIds.length
+    ? await prisma.userPositionSnapshot.findMany({
+        where: {
+          userId: { in: userIds },
+          // Excluir snapshots tomados en los últimos 5 minutos (sería el "actual")
+          takenAt: { lt: new Date(Date.now() - 5 * 60 * 1000) },
+        },
+        orderBy: { takenAt: 'desc' },
+        distinct: ['userId'],
+        select: { userId: true, position: true },
+      })
+    : []
+  const previousByUser = new Map<string, number>(
+    previousSnapshots.map((s) => [s.userId, s.position])
+  )
+
+  const ranking: RankingEntry[] = users.map((user, index) => {
+    const currentPosition = offset + index + 1
+    const previousPosition: number | null = previousByUser.get(user.id) ?? null
+    let direction: 'UP' | 'DOWN' | 'SAME' | 'NEW' = 'NEW'
+    let delta: number | null = null
+    if (previousPosition !== null) {
+      delta = previousPosition - currentPosition // positivo = subió (de 5 a 2 = +3)
+      if (delta > 0) direction = 'UP'
+      else if (delta < 0) direction = 'DOWN'
+      else direction = 'SAME'
+    }
+    return {
+      position: currentPosition,
+      id: user.id,
+      name: user.name,
+      totalPoints: user.totalPoints,
+      exactScores: user.exactScores,
+      correctWinners: user.correctWinners,
+      // Aciertos = correctWinners (que ya cuenta exacto + ganador correcto)
+      hits: user.correctWinners,
+      predictionsCount: user._count.predictions,
+      createdAt: user.createdAt,
+      trend: { previousPosition, delta, direction },
+    }
+  })
 
   return ranking
+}
+
+/**
+ * Toma un snapshot de las posiciones actuales de todos los usuarios.
+ * Llamar después de recalcular puntos o sincronizar resultados.
+ */
+export async function takeRankingSnapshot() {
+  const users = await prisma.user.findMany({
+    orderBy: [
+      { totalPoints: 'desc' },
+      { correctWinners: 'desc' },
+      { exactScores: 'desc' },
+      { createdAt: 'asc' },
+    ],
+    select: { id: true, totalPoints: true },
+  })
+
+  if (users.length === 0) return { success: true, count: 0 }
+
+  // createMany no retorna los ids pero sí crea en batch
+  await prisma.userPositionSnapshot.createMany({
+    data: users.map((u, idx) => ({
+      userId: u.id,
+      position: idx + 1,
+      totalPoints: u.totalPoints,
+    })),
+  })
+
+  return { success: true, count: users.length }
+}
+
+/**
+ * Limpia snapshots antiguos para no acumular datos innecesarios.
+ * Conserva solo los últimos N snapshots por usuario.
+ */
+export async function pruneOldSnapshots(keepPerUser: number = 20) {
+  const users = await prisma.user.findMany({ select: { id: true } })
+  let deleted = 0
+  for (const u of users) {
+    const snapshots = await prisma.userPositionSnapshot.findMany({
+      where: { userId: u.id },
+      orderBy: { takenAt: 'desc' },
+      select: { id: true },
+    })
+    if (snapshots.length > keepPerUser) {
+      const toDelete = snapshots.slice(keepPerUser).map((s) => s.id)
+      const result = await prisma.userPositionSnapshot.deleteMany({
+        where: { id: { in: toDelete } },
+      })
+      deleted += result.count
+    }
+  }
+  return { success: true, deleted }
 }
 
 export async function getUserPosition(userId: string): Promise<number> {
