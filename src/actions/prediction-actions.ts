@@ -222,3 +222,103 @@ export async function getPredictionStats(userId?: string) {
     correctWinners: predictions.filter((p) => p.isCorrectWinner).length,
   }
 }
+
+/**
+ * Estadísticas comunitarias del próximo partido:
+ * - Moda (marcador más predicho)
+ * - Distribución por resultado (local / empate / visitante)
+ * - Predicción del usuario actual (si existe)
+ */
+export async function getNextMatchStats(matchId: string) {
+  const currentUser = await getCurrentUser()
+
+  const [predictions, userPrediction] = await Promise.all([
+    prisma.prediction.findMany({
+      where: { matchId },
+      select: { homeGoals: true, awayGoals: true },
+    }),
+    currentUser
+      ? prisma.prediction.findUnique({
+          where: {
+            userId_matchId: { userId: currentUser.id, matchId },
+          },
+          select: { homeGoals: true, awayGoals: true, createdAt: true },
+        })
+      : Promise.resolve(null),
+  ])
+
+  const total = predictions.length
+
+  // Distribución: local gana / empate / visitante gana
+  let homeWinCount = 0
+  let drawCount = 0
+  let awayWinCount = 0
+  const scoreCounts = new Map<string, number>()
+
+  for (const p of predictions) {
+    const key = `${p.homeGoals}-${p.awayGoals}`
+    scoreCounts.set(key, (scoreCounts.get(key) ?? 0) + 1)
+
+    if (p.homeGoals > p.awayGoals) homeWinCount++
+    else if (p.homeGoals < p.awayGoals) awayWinCount++
+    else drawCount++
+  }
+
+  // Moda: marcador con más predicciones
+  let modeScore: { homeGoals: number; awayGoals: number; count: number } | null = null
+  for (const [key, count] of scoreCounts.entries()) {
+    if (!modeScore || count > modeScore.count) {
+      const [h, a] = key.split('-').map(Number)
+      modeScore = { homeGoals: h, awayGoals: a, count }
+    }
+  }
+
+  const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0)
+
+  return {
+    total,
+    mode: modeScore
+      ? {
+          homeGoals: modeScore.homeGoals,
+          awayGoals: modeScore.awayGoals,
+          count: modeScore.count,
+          percentage: pct(modeScore.count),
+        }
+      : null,
+    distribution: {
+      homeWin: { count: homeWinCount, percentage: pct(homeWinCount) },
+      draw: { count: drawCount, percentage: pct(drawCount) },
+      awayWin: { count: awayWinCount, percentage: pct(awayWinCount) },
+    },
+    userPrediction,
+  }
+}
+
+/**
+ * Muro social: últimas predicciones realizadas por la comunidad.
+ * Devuelve información resumida (anonimizada opcional, nombre, marcador, partido, tiempo relativo).
+ */
+export async function getRecentPredictions(limit: number = 10) {
+  const predictions = await prisma.prediction.findMany({
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      homeGoals: true,
+      awayGoals: true,
+      createdAt: true,
+      user: { select: { name: true } },
+      match: {
+        select: {
+          id: true,
+          homeTeam: true,
+          awayTeam: true,
+          matchDate: true,
+          status: true,
+        },
+      },
+    },
+  })
+
+  return predictions
+}

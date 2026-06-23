@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { PrizeCard } from '@/components/PrizeCard'
 import { RankingTable } from '@/components/RankingTable'
 import { UpcomingMatchHero } from '@/components/UpcomingMatchHero'
+import { NextMatchPulse } from '@/components/NextMatchPulse'
+import { RecentPredictionsFeed } from '@/components/RecentPredictionsFeed'
 import { getPrizes } from '@/actions/admin-actions'
 import { getTopUsers } from '@/actions/user-actions'
 import { getNextMatch } from '@/actions/match-actions'
@@ -125,45 +127,63 @@ export default async function HomePage() {
       </section>
 
       <section className="py-16 bg-gradient-to-b from-background to-surface-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-                <Gift className="h-4 w-4" />
-                Premios Publicados
-              </div>
-              <h2 className="font-display text-3xl md:text-5xl text-white">
-                PREMIOS <span className="text-accent">DESTACADOS</span>
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm md:text-base text-text-secondary">
-                Estos premios se muestran directamente desde el módulo de administración y se actualizan según lo que publiques.
-              </p>
-            </div>
-            <Link href="/premios">
-              <Button variant="ghost" className="self-start md:self-auto">
-                Ver Todos Los Premios
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          {prizes.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {prizes.slice(0, 3).map((prize) => (
-                <PrizeCard key={prize.id} prize={prize} />
-              ))}
-            </div>
-          ) : (
-            <Card className="py-12 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
-                <Gift className="h-8 w-8 text-accent" />
-              </div>
-              <CardTitle className="mb-2">Premios Por Confirmar</CardTitle>
-              <p className="mx-auto max-w-xl text-sm text-text-secondary">
-                Aun no hay premios publicados desde administración. En cuanto se carguen, aparecerán aquí automáticamente.
-              </p>
-            </Card>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+          {/* Pulso de la comunidad (moda + distribución + tu pred vs moda) */}
+          {nextMatch && (
+            <NextMatchPulse
+              matchId={nextMatch.id}
+              homeTeam={nextMatch.homeTeam}
+              awayTeam={nextMatch.awayTeam}
+              matchDate={nextMatch.matchDate}
+              group={nextMatch.group}
+              hasUser={!!user}
+            />
           )}
+
+          {/* Muro social de últimas predicciones */}
+          <RecentPredictionsFeed limit={10} ctaLogin={!user} />
+
+          {/* Premios */}
+          <div>
+            <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+                  <Gift className="h-4 w-4" />
+                  Premios Publicados
+                </div>
+                <h2 className="font-display text-3xl md:text-5xl text-white">
+                  PREMIOS <span className="text-accent">DESTACADOS</span>
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm md:text-base text-text-secondary">
+                  Estos premios se muestran directamente desde el módulo de administración y se actualizan según lo que publiques.
+                </p>
+              </div>
+              <Link href="/premios">
+                <Button variant="ghost" className="self-start md:self-auto">
+                  Ver Todos Los Premios
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+
+            {prizes.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {prizes.slice(0, 3).map((prize) => (
+                  <PrizeCard key={prize.id} prize={prize} />
+                ))}
+              </div>
+            ) : (
+              <Card className="py-12 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
+                  <Gift className="h-8 w-8 text-accent" />
+                </div>
+                <CardTitle className="mb-2">Premios Por Confirmar</CardTitle>
+                <p className="mx-auto max-w-xl text-sm text-text-secondary">
+                  Aun no hay premios publicados desde administración. En cuanto se carguen, aparecerán aquí automáticamente.
+                </p>
+              </Card>
+            )}
+          </div>
         </div>
       </section>
 
