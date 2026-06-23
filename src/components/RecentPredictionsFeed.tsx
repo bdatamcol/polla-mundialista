@@ -51,80 +51,90 @@ export async function RecentPredictionsFeed({
   }
 
   return (
-    <Card className="border-accent/15 bg-gradient-to-br from-primary-dark/40 to-background-dark p-4 sm:p-5">
-      {/* Header compacto */}
-      <div className="mb-3 flex items-center justify-between gap-2">
+    <Card className="overflow-hidden border-accent/15 bg-gradient-to-br from-primary-dark/45 via-background to-background-dark p-4 sm:p-5 md:p-6">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/15">
-            <Activity className="h-3.5 w-3.5 text-accent" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-accent/20 bg-accent/10 shadow-lg shadow-accent/10">
+            <Activity className="h-5 w-5 text-accent" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-accent">
               <span className="relative mr-1.5 inline-flex h-1.5 w-1.5 align-middle">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
               </span>
               Actividad en vivo
             </p>
-            <p className="text-[11px] text-text-secondary">
-              Últimas predicciones de la comunidad
-            </p>
+            <p className="text-lg font-semibold text-white">Ultimas predicciones</p>
           </div>
         </div>
-        <Link href="/predicciones" scroll>
-          <Button variant="ghost" size="sm">
-            Ver más
-            <ArrowRight className="ml-1 w-3 h-3" />
-          </Button>
-        </Link>
+
+        <div className="flex items-center gap-3 self-start">
+          <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-text-secondary">
+            <span className="font-mono text-base font-bold text-white">{predictions.length}</span>
+            <span className="ml-2">recientes</span>
+          </div>
+          <Link href="/predicciones" scroll>
+            <Button variant="ghost" size="sm">
+              Ver
+              <ArrowRight className="ml-1 w-3 h-3" />
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Feed */}
-      <ul className="divide-y divide-white/5">
+      <ul className="space-y-3">
         {predictions.map((p) => {
           const status = STATUS_STYLES[p.match.status] ?? STATUS_STYLES.PENDING
           return (
             <li
               key={p.id}
-              className="group flex items-center gap-3 py-2.5 transition-colors hover:bg-white/[0.02]"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:bg-white/[0.05]"
             >
-              {/* Icono de predicción */}
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                <Target className="h-4 w-4" />
-              </div>
+              <div className="absolute left-[19px] top-[52px] hidden h-[calc(100%-64px)] w-px bg-gradient-to-b from-accent/25 to-transparent sm:block" />
 
-              {/* Contenido */}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-white">
-                  <span className="text-text-secondary">Se apostó </span>
-                  <span className="font-mono font-bold text-accent">
-                    {p.homeGoals}-{p.awayGoals}
-                  </span>
-                  <span className="text-text-secondary"> para </span>
-                  <span className="font-semibold text-white">
-                    {p.match.homeTeam} vs {p.match.awayTeam}
-                  </span>
-                </p>
-                <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[10px] text-text-secondary">
-                  <span suppressHydrationWarning>{formatRelativeTime(p.createdAt)}</span>
-                  <span aria-hidden>·</span>
-                  <span
-                    className={`inline-flex items-center rounded-full border px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider ${status.className}`}
-                  >
-                    {status.label}
-                  </span>
+              <div className="flex items-start gap-3">
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-accent/15 bg-accent/10 text-accent shadow-lg shadow-primary-dark/10">
+                  <Target className="h-4.5 w-4.5" />
                 </div>
-              </div>
 
-              {/* Link al partido */}
-              <Link
-                href={`/predicciones/${p.match.id}`}
-                scroll
-                className="hidden shrink-0 text-text-secondary transition-colors group-hover:text-accent sm:block"
-                title="Ver partido"
-              >
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 font-mono text-sm font-bold text-accent">
+                        {p.homeGoals}-{p.awayGoals}
+                      </span>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wider ${status.className}`}
+                      >
+                        {status.label}
+                      </span>
+                    </div>
+                    <span suppressHydrationWarning className="text-[11px] text-text-secondary">
+                      {formatRelativeTime(p.createdAt)}
+                    </span>
+                  </div>
+
+                  <p className="text-sm font-semibold leading-relaxed text-white sm:text-[15px]">
+                    {p.match.homeTeam} vs {p.match.awayTeam}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-text-secondary">
+                    <span className="rounded-full bg-white/5 px-2.5 py-1">
+                      {p.match.status === 'PENDING' ? 'Por jugar' : p.match.status === 'LIVE' ? 'En vivo' : 'Finalizado'}
+                    </span>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/predicciones/${p.match.id}`}
+                  scroll
+                  className="hidden shrink-0 rounded-xl border border-white/10 bg-white/5 p-2 text-text-secondary transition-colors group-hover:border-accent/20 group-hover:text-accent sm:block"
+                  title="Ver partido"
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </li>
           )
         })}
@@ -132,12 +142,10 @@ export async function RecentPredictionsFeed({
 
       {ctaLogin && (
         <div className="mt-3 rounded-xl border border-accent/20 bg-accent/5 p-3 text-center">
-          <p className="text-xs text-text-secondary">
-            ¿Quieres ver tu predicción aquí? Inicia sesión y empieza a jugar.
-          </p>
+          <p className="text-xs text-text-secondary">Inicia sesion para participar.</p>
           <Link href="/login" scroll>
             <Button size="sm" className="mt-2">
-              Iniciar sesión
+              Entrar
               <ArrowRight className="ml-1 w-3.5 h-3.5" />
             </Button>
           </Link>
