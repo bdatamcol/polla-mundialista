@@ -48,3 +48,25 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2)
 }
+
+/**
+ * Tiempo relativo en español: "hace 3 min", "hace 2 h", "ayer", etc.
+ * Usar solo en cliente o con `suppressHydrationWarning` por diferencias de zona horaria.
+ */
+export function formatRelativeTime(date: Date | string): string {
+  const d = new Date(date)
+  const now = new Date()
+  const diffMs = now.getTime() - d.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHour = Math.floor(diffMin / 60)
+  const diffDay = Math.floor(diffHour / 24)
+
+  if (diffSec < 30) return 'justo ahora'
+  if (diffSec < 60) return `hace ${diffSec}s`
+  if (diffMin < 60) return `hace ${diffMin} min`
+  if (diffHour < 24) return `hace ${diffHour} h`
+  if (diffDay === 1) return 'ayer'
+  if (diffDay < 7) return `hace ${diffDay} días`
+  return formatDate(d)
+}
