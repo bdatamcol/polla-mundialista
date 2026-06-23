@@ -13,6 +13,15 @@ export interface RankingEntry {
   hits: number
   predictionsCount: number
   createdAt: Date
+  /** Tendencia de la posición vs el snapshot previo */
+  trend: {
+    /** Posición anterior (null si no hay snapshot previo) */
+    previousPosition: number | null
+    /** Diferencia: positivo = subió en el ranking, negativo = bajó, 0 = igual */
+    delta: number | null
+    /** "UP" | "DOWN" | "SAME" | "NEW" */
+    direction: 'UP' | 'DOWN' | 'SAME' | 'NEW'
+  }
 }
 
 export interface PredictionWithMatch extends Prediction {

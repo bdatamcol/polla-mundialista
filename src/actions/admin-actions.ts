@@ -5,6 +5,7 @@ import { getCurrentUser, isAdmin } from '@/lib/auth'
 import { calculatePredictionPoints, DEFAULT_POINTS_CONFIG } from '@/lib/points'
 import { resultSchema, matchSchema, prizeSchema, pointsConfigSchema } from '@/lib/validations'
 import { revalidatePath } from 'next/cache'
+import { takeRankingSnapshot } from '@/actions/user-actions'
 
 export async function loadResults(
   matchId: string,
@@ -515,6 +516,13 @@ export async function recalculateAllPoints() {
       action: 'RECALCULATE_ALL_POINTS',
     },
   })
+
+  // Tomar snapshot del ranking tras recalcular para registrar la nueva posición
+  try {
+    await takeRankingSnapshot()
+  } catch (err) {
+    console.error('Error tomando snapshot tras recalculate:', err)
+  }
 
   revalidatePath('/ranking')
   revalidatePath('/predicciones')
