@@ -7,30 +7,54 @@ import { WC_2026_TEAMS } from '@/lib/wc-2026-teams'
 
 /**
  * Verifica si las predicciones de finalistas están cerradas.
- * Se cierran cuando comienza el primer partido de Octavos de final.
+ *
+ * Regla: se cierran a las 11:30 AM hora Colombia del día en que
+ * se juega el primer partido de Octavos de Final (ROUND_OF_16).
+ *
+ * - 11:30 AM Colombia (America/Bogota, UTC-5) = 16:30 UTC
+ * - Si aún no hay partidos de octavos sincronizados, permanece ABIERTO.
+ * - Si la API cambia la fecha del primer octavos, el lock se ajusta solo.
  */
 export async function isFinalistPredictionLocked(): Promise<boolean> {
-  const firstKnockout = await prisma.match.findFirst({
-    where: {
-      phase: { in: ['ROUND_OF_16', 'QUARTER_FINAL'] },
-    },
+  const firstRoundOf16 = await prisma.match.findFirst({
+    where: { phase: 'ROUND_OF_16' },
     orderBy: { matchDate: 'asc' },
     select: { matchDate: true },
   })
 
-  if (!firstKnockout) {
-    return false // Aún no hay partidos de eliminatoria sincronizados
+  if (!firstRoundOf16) {
+    return false // Aún no hay octavos programados
   }
 
-  return new Date() >= firstKnockout.matchDate
+  // Extraer año/mes/día del partido (en UTC porque matchDate viene en UTC)
+  const matchDate = new Date(firstRoundOf16.matchDate)
+  const lockAt = new Date(
+    Date.UTC(
+      matchDate.getUTCFullYear(),
+      matchDate.getUTCMonth(),
+      matchDate.getUTCDate(),
+      16, // 16:30 UTC = 11:30 AM Colombia (UTC-5)
+      30,
+      0,
+      0
+    )
+  )
+
+  return new Date() >= lockAt
 }
 
 /**
  * Devuelve la lista de equipos disponibles para elegir como finalistas.
- * Combina los equipos sincronizados en la BD con la lista oficial del Mundial 2026.
+ *
+ * Fuente de verdad: los equipos que aparecen en partidos sincronizados en la BD
+ * (vienen de la API del Mundial, que solo incluye equipos clasificados).
+ *
+ * Adicionalmente incluye los equipos de predicciones ya guardadas para que
+ * el usuario pueda ver sus selecciones anteriores aunque el equipo ya no esté
+ * en partidos activos.
  */
 export async function getAvailableTeams() {
-  // 1. Intentar obtener equipos desde los partidos sincronizados
+  // 1. Equipos desde partidos sincronizados (los que REALMENTE juegan el mundial)
   const matches = await prisma.match.findMany({
     where: {
       NOT: {
@@ -39,6 +63,7 @@ export async function getAvailableTeams() {
           { awayTeam: 'TBD' },
         ],
       },
+      homeTeamTla: { not: null },
     },
     select: {
       homeTeam: true,
@@ -73,19 +98,57 @@ export async function getAvailableTeams() {
     }
   }
 
-  // 2. Combinar con la lista oficial de WC 2026 (incluyendo equipos débiles
-  //    como Haití, Cabo Verde, Curazao, etc. para que los usuarios puedan
-  //    predecir incluso "este equipo no pasa de grupos")
-  for (const team of WC_2026_TEAMS) {
-    if (!teamsMap.has(team.tla)) {
-      teamsMap.set(team.tla, {
-        name: team.name,
-        full: team.name,
-        tla: team.tla,
-        flag: null,
-        crest: null,
-        iso2: team.iso2,
-      })
+  // 2. Equipos ya guardados en predicciones previas (para que el form los muestre
+  //    como seleccionados aunque el equipo no esté en partidos actuales)
+  const existingPredictions = await prisma.finalistPrediction.findMany({
+    select: {
+      semifinalist1: true,
+      semifinalist2: true,
+      semifinalist3: true,
+      semifinalist4: true,
+      finalist1: true,
+      finalist2: true,
+    },
+  })
+
+  const savedTlas = new Set<string>()
+  for (const p of existingPredictions) {
+    for (const tla of [
+      p.semifinalist1,
+      p.semifinalist2,
+      p.semifinalist3,
+      p.semifinalist4,
+      p.finalist1,
+      p.finalist2,
+    ]) {
+      if (tla) savedTlas.add(tla)
+    }
+  }
+
+  // Para TLAs guardados que no estén en matches, buscar en WC_2026_TEAMS para mostrar nombre
+  for (const tla of savedTlas) {
+    if (!teamsMap.has(tla)) {
+      const team = WC_2026_TEAMS.find((t) => t.tla === tla)
+      if (team) {
+        teamsMap.set(tla, {
+          name: team.name,
+          full: team.name,
+          tla: team.tla,
+          flag: null,
+          crest: null,
+          iso2: team.iso2,
+        })
+      } else {
+        // Si no lo encontramos, agregar con TLA como nombre
+        teamsMap.set(tla, {
+          name: tla,
+          full: tla,
+          tla,
+          flag: null,
+          crest: null,
+          iso2: null,
+        })
+      }
     }
   }
 
