@@ -7,23 +7,40 @@ import { WC_2026_TEAMS } from '@/lib/wc-2026-teams'
 
 /**
  * Verifica si las predicciones de finalistas están cerradas.
- * Se cierran al finalizar los 16avos (octavos de final),
- * es decir, cuando comienza el primer partido de cuartos de final.
+ *
+ * Regla: se cierran a las 11:30 AM hora Colombia del día en que
+ * se juega el primer partido de Octavos de Final (ROUND_OF_16).
+ *
+ * - 11:30 AM Colombia (America/Bogota, UTC-5) = 16:30 UTC
+ * - Si aún no hay partidos de octavos sincronizados, permanece ABIERTO.
+ * - Si la API cambia la fecha del primer octavos, el lock se ajusta solo.
  */
 export async function isFinalistPredictionLocked(): Promise<boolean> {
-  const firstQuarterFinal = await prisma.match.findFirst({
-    where: {
-      phase: 'QUARTER_FINAL',
-    },
+  const firstRoundOf16 = await prisma.match.findFirst({
+    where: { phase: 'ROUND_OF_16' },
     orderBy: { matchDate: 'asc' },
     select: { matchDate: true },
   })
 
-  if (!firstQuarterFinal) {
-    return false // Aún no hay cuartos de final programados
+  if (!firstRoundOf16) {
+    return false // Aún no hay octavos programados
   }
 
-  return new Date() >= firstQuarterFinal.matchDate
+  // Extraer año/mes/día del partido (en UTC porque matchDate viene en UTC)
+  const matchDate = new Date(firstRoundOf16.matchDate)
+  const lockAt = new Date(
+    Date.UTC(
+      matchDate.getUTCFullYear(),
+      matchDate.getUTCMonth(),
+      matchDate.getUTCDate(),
+      16, // 16:30 UTC = 11:30 AM Colombia (UTC-5)
+      30,
+      0,
+      0
+    )
+  )
+
+  return new Date() >= lockAt
 }
 
 /**

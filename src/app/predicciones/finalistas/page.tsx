@@ -70,8 +70,8 @@ export default async function FinalistasPage() {
               </h3>
               <p className="text-text-secondary text-sm">
                 {locked
-                  ? 'Las predicciones de finalistas están cerradas. Se cerraron al finalizar los 16avos (octavos de final).'
-                  : 'Puedes modificar tu predicción hasta que finalicen los 16avos (octavos de final). Cuando empiece el primer partido de cuartos, se cierra.'}
+                  ? 'Las predicciones de finalistas están cerradas. Se cerraron a las 11:30 AM hora Colombia del día del primer partido de Octavos de Final.'
+                  : 'Puedes modificar tu predicción hasta las 11:30 AM hora Colombia del día del primer partido de Octavos de Final.'}
               </p>
             </div>
           </div>
