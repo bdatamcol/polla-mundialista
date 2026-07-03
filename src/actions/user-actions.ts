@@ -98,7 +98,7 @@ export async function getUserPosition(userId: string): Promise<number> {
           totalPoints: user.totalPoints,
           correctWinners: user.correctWinners,
           exactScores: user.exactScores,
-          createdAt: { gt: user.createdAt },
+          createdAt: { lt: user.createdAt },
         },
       ],
     },
