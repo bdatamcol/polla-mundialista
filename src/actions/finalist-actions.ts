@@ -11,9 +11,9 @@ import { WC_2026_TEAMS } from '@/lib/wc-2026-teams'
  * Regla: se cierran a las 11:30 AM hora Colombia del día en que
  * se juega el primer partido de Octavos de Final (ROUND_OF_16).
  *
- * - 11:30 AM Colombia (America/Bogota, UTC-5) = 16:30 UTC
- * - Si aún no hay partidos de octavos sincronizados, permanece ABIERTO.
- * - Si la API cambia la fecha del primer octavos, el lock se ajusta solo.
+ * - Si la API tiene octavos → lock a las 11:30 AM Colombia del primer partido
+ * - Si la API NO tiene octavos → BLOQUEADO (asumimos que el plazo ya pasó)
+ *   Esto evita que la gente siga editando si la API aún no sincroniza los octavos.
  */
 export async function isFinalistPredictionLocked(): Promise<boolean> {
   const firstRoundOf16 = await prisma.match.findFirst({
@@ -22,21 +22,20 @@ export async function isFinalistPredictionLocked(): Promise<boolean> {
     select: { matchDate: true },
   })
 
+  // Si no hay octavos aún, asumimos que el plazo ya pasó y bloqueamos.
+  // Los que ya guardaron, sus predicciones quedan. Los que no, no pueden elegir.
   if (!firstRoundOf16) {
-    return false // Aún no hay octavos programados
+    return true
   }
 
-  // Extraer año/mes/día del partido (en UTC porque matchDate viene en UTC)
+  // 11:30 AM Colombia (UTC-5) = 16:30 UTC del día del primer partido de octavos
   const matchDate = new Date(firstRoundOf16.matchDate)
   const lockAt = new Date(
     Date.UTC(
       matchDate.getUTCFullYear(),
       matchDate.getUTCMonth(),
       matchDate.getUTCDate(),
-      16, // 16:30 UTC = 11:30 AM Colombia (UTC-5)
-      30,
-      0,
-      0
+      16, 30, 0, 0
     )
   )
 
