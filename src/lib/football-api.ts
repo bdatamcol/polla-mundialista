@@ -245,8 +245,13 @@ export async function getLiveMatches(): Promise<FootballMatch[]> {
   )
 }
 
-// Detecta la fase del torneo a partir del campo "group" o "matchday" de football-data.org
-function detectPhase(group: string | undefined, matchday: number | undefined): {
+// Detecta la fase del torneo a partir del campo "group", "matchday" o la fecha del partido.
+// La fecha es el último fallback: se usa el calendario del Mundial 2026.
+function detectPhase(
+  group: string | undefined,
+  matchday: number | undefined,
+  utcDate?: string
+): {
   phase: 'GROUP' | 'ROUND_OF_16' | 'QUARTER_FINAL' | 'SEMI_FINAL' | 'THIRD_PLACE' | 'FINAL'
   groupLabel: string
 } {
@@ -297,12 +302,46 @@ function detectPhase(group: string | undefined, matchday: number | undefined): {
     }
   }
 
+  // Fallback por fecha del partido (Mundial 2026).
+  // Calendario típico: octavos 4-7 julio, cuartos 11-15 julio, semis 18-19 julio,
+  // tercer lugar 18 julio, final 19 julio.
+  if (utcDate) {
+    const matchDate = new Date(utcDate)
+    if (!isNaN(matchDate.getTime())) {
+      // Usamos la fecha en UTC para evitar problemas de zona horaria
+      const month = matchDate.getUTCMonth() // 0=ene, 6=jul
+      const day = matchDate.getUTCDate()
+
+      if (month === 6) { // Julio
+        if (day >= 4 && day <= 10) {
+          return { phase: 'ROUND_OF_16', groupLabel: 'Octavos de final' }
+        }
+        if (day >= 11 && day <= 15) {
+          return { phase: 'QUARTER_FINAL', groupLabel: 'Cuartos de final' }
+        }
+        if (day === 16 || day === 17) {
+          return { phase: 'QUARTER_FINAL', groupLabel: 'Cuartos de final' }
+        }
+        if (day === 18) {
+          // 18 de julio puede ser semifinal o tercer lugar.
+          // Si el partido es entre dos equipos reales (no TBD) y NO es el de tercer lugar,
+          // lo tratamos como semifinal. Para el tercer lugar, se detecta arriba por el
+          // campo group (que sí suele traer "THIRD_PLACE").
+          return { phase: 'SEMI_FINAL', groupLabel: 'Semifinal' }
+        }
+        if (day === 19) {
+          return { phase: 'FINAL', groupLabel: 'Final' }
+        }
+      }
+    }
+  }
+
   return { phase: 'GROUP', groupLabel: 'Fase de grupos' }
 }
 
 export function mapFootballMatchToMatch(footballMatch: FootballMatch) {
-  // Detectar fase y label del grupo
-  const phaseInfo = detectPhase(footballMatch.group, footballMatch.matchday)
+  // Detectar fase y label del grupo. Pasamos la fecha como último fallback.
+  const phaseInfo = detectPhase(footballMatch.group, footballMatch.matchday, footballMatch.utcDate)
   let group = phaseInfo.groupLabel
 
   // Mantener fallback legacy por si la fase no se pudo detectar
