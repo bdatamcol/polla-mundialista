@@ -250,37 +250,85 @@ export async function saveFinalistPrediction(data: {
 
 /**
  * Calcula los puntos de finalistas para todos los usuarios.
- * Se llama cuando terminan los cuartos de final y las semifinales.
+ * Se llama cuando hay cambios en cuartos, semis o final.
+ *
+ * Lógica de detección:
+ * - Semifinalistas: equipos únicos en partidos SEMI_FINAL (PENDING o FINISHED).
+ *   Si una semi ya está programada con equipos reales, esos equipos ya son
+ *   semifinalistas confirmados (no necesitamos esperar a que termine).
+ *   Fallback: si no hay semis, usar ganadores de cuartos terminados.
+ * - Finalistas: solo cuando las 2 semis están terminadas → ganador de cada semi.
  */
 export async function recalculateFinalistPoints() {
-  // Obtener partidos de cuartos de final
+  // Obtener partidos de cuartos de final terminados
   const quarterFinals = await prisma.match.findMany({
     where: { phase: 'QUARTER_FINAL', status: 'FINISHED' },
   })
 
-  // Obtener partidos de semifinales
-  const semiFinals = await prisma.match.findMany({
-    where: { phase: 'SEMI_FINAL', status: 'FINISHED' },
+  // Obtener partidos de semifinales (PENDING o FINISHED)
+  const semiFinalMatches = await prisma.match.findMany({
+    where: { phase: 'SEMI_FINAL' },
   })
 
-  // Determinar semifinalistas reales (ganadores de cuartos)
+  // Obtener partido de la final
+  const finalMatch = await prisma.match.findFirst({
+    where: { phase: 'FINAL' },
+  })
+
+  // === Determinar semifinalistas reales ===
   let actualSemifinalists: string[] = []
-  if (quarterFinals.length === 4) {
+
+  if (semiFinalMatches.length > 0) {
+    // Equipos únicos en los partidos de semis (PENDING o FINISHED).
+    // Si una semi ya tiene equipos definidos, esos equipos ya son
+    // semifinalistas confirmados, sin importar el resultado de la semi.
+    const semisTeams: string[] = []
+    for (const m of semiFinalMatches) {
+      if (m.homeTeamTla && m.homeTeamTla !== 'TBD') {
+        semisTeams.push(m.homeTeamTla)
+      }
+      if (m.awayTeamTla && m.awayTeamTla !== 'TBD') {
+        semisTeams.push(m.awayTeamTla)
+      }
+    }
+    actualSemifinalists = Array.from(new Set(semisTeams))
+  } else if (quarterFinals.length === 4) {
+    // Fallback: si no hay semis programadas, usar ganadores de cuartos
     actualSemifinalists = quarterFinals.map((m) =>
       (m.homeGoals! > m.awayGoals! ? m.homeTeamTla : m.awayTeamTla)!
     ).filter(Boolean) as string[]
   }
 
-  // Determinar finalistas reales (ganadores de semis)
+  // === Determinar finalistas reales ===
+  // Equipos únicos en la final (PENDING o FINISHED) — si la final ya tiene
+  // equipos asignados, ya son finalistas confirmados.
   let actualFinalists: string[] = []
-  if (semiFinals.length === 2) {
-    actualFinalists = semiFinals.map((m) =>
-      (m.homeGoals! > m.awayGoals! ? m.homeTeamTla : m.awayTeamTla)!
-    ).filter(Boolean) as string[]
+  if (finalMatch) {
+    if (finalMatch.homeTeamTla && finalMatch.homeTeamTla !== 'TBD') {
+      actualFinalists.push(finalMatch.homeTeamTla)
+    }
+    if (finalMatch.awayTeamTla && finalMatch.awayTeamTla !== 'TBD') {
+      actualFinalists.push(finalMatch.awayTeamTla)
+    }
+    actualFinalists = Array.from(new Set(actualFinalists))
+  }
+
+  // Fallback final para finalistas: si no hay final programada, usar ganadores de semis terminadas
+  if (actualFinalists.length === 0) {
+    const finishedSemis = semiFinalMatches.filter((m) => m.status === 'FINISHED')
+    if (finishedSemis.length === 2) {
+      actualFinalists = finishedSemis.map((m) =>
+        (m.homeGoals! > m.awayGoals! ? m.homeTeamTla : m.awayTeamTla)!
+      ).filter(Boolean) as string[]
+    }
   }
 
   if (actualSemifinalists.length === 0 && actualFinalists.length === 0) {
-    return { success: true, updated: 0, message: 'Aún no hay resultados de eliminatorias' }
+    return {
+      success: true,
+      updated: 0,
+      message: 'Aún no hay resultados de eliminatorias',
+    }
   }
 
   // Obtener configuración de puntos
