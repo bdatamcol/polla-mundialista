@@ -42,6 +42,13 @@ export default async function AdminPage() {
       color: 'text-accent',
     },
     {
+      title: 'Puntos Finalistas',
+      description: 'Sincronizar puntos de semis/final al ranking',
+      href: '/admin/finalistas',
+      icon: Trophy,
+      color: 'text-accent',
+    },
+    {
       title: 'Predicciones',
       description: 'Ver todas las predicciones',
       href: '/admin/predicciones',

@@ -554,3 +554,93 @@ export async function getAdminStats() {
     pendingMatches,
   }
 }
+
+/**
+ * Sincroniza los puntos de finalistas al totalPoints de cada usuario.
+ *
+ * ¿Por qué existe?
+ * Cuando se ejecuta `recalculateAllPoints` (o el sync de resultados), se
+ * resetea `totalPoints` a 0 y se recalculan SOLO los puntos de partidos.
+ * Los `finalistPoints` quedan guardados pero NO se suman al `totalPoints`,
+ * por lo que el ranking general no refleja esos puntos.
+ *
+ * Esta acción:
+ * 1. Calcula los puntos de partidos de cada usuario (suma de Prediction.points)
+ * 2. Le suma los finalistPoints
+ * 3. Setea el totalPoints con ese valor
+ *
+ * Es idempotente: se puede ejecutar varias veces sin duplicar.
+ *
+ * Solo accesible para admins.
+ */
+export async function syncFinalistPointsToTotal() {
+  const admin = await isAdmin()
+  if (!admin) {
+    return { success: false, error: 'No tienes permisos de administrador' }
+  }
+
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      finalistPoints: true,
+      totalPoints: true,
+    },
+  })
+
+  let updated = 0
+  const details: Array<{
+    userId: string
+    name: string
+    matchPoints: number
+    finalistPoints: number
+    oldTotal: number
+    newTotal: number
+  }> = []
+
+  for (const u of users) {
+    // Sumar los puntos de partidos (Prediction.points) del usuario
+    const matchPointsAgg = await prisma.prediction.aggregate({
+      where: { userId: u.id },
+      _sum: { points: true },
+    })
+    const matchPoints = matchPointsAgg._sum.points || 0
+
+    const expectedTotal = matchPoints + u.finalistPoints
+
+    // Solo actualizar si hay diferencia (idempotente)
+    if (u.totalPoints !== expectedTotal) {
+      await prisma.user.update({
+        where: { id: u.id },
+        data: { totalPoints: expectedTotal },
+      })
+      details.push({
+        userId: u.id,
+        name: u.name,
+        matchPoints,
+        finalistPoints: u.finalistPoints,
+        oldTotal: u.totalPoints,
+        newTotal: expectedTotal,
+      })
+      updated++
+    }
+  }
+
+  // Tomar snapshot del ranking para que la tendencia se actualice
+  try {
+    await takeRankingSnapshot()
+  } catch (err) {
+    console.error('Error tomando snapshot:', err)
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/admin')
+  revalidatePath('/')
+
+  return {
+    success: true,
+    updated,
+    message: `${updated} usuarios actualizados`,
+    details,
+  }
+}
