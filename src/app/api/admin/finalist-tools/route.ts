@@ -348,6 +348,12 @@ async function forceFixPhases() {
       newGroup = 'Semifinal'
     }
 
+    // Caso 4: partido del 18-jul mal catalogado como SEMI_FINAL → THIRD_PLACE
+    if (m.phase === 'SEMI_FINAL' && day === 18) {
+      newPhase = 'THIRD_PLACE'
+      newGroup = 'Tercer lugar'
+    }
+
     if (newPhase) {
       await prisma.match.update({
         where: { id: m.id },
