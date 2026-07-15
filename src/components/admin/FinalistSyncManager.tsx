@@ -28,7 +28,16 @@ export function FinalistSyncManager() {
 
     try {
       const res = await syncFinalistPointsToTotal()
-      setResult(res)
+      // Normalizar: la acción puede retornar { error } o { message, details }
+      const normalized = {
+        success: res.success,
+        message: 'message' in res && res.message ? res.message : 'error' in res ? res.error : 'Resultado sin mensaje',
+        details: 'details' in res ? res.details : undefined,
+      }
+      setResult({
+        ...normalized,
+        message: normalized.message || 'Operación completada sin mensaje'
+      })
       if (res.success) {
         router.refresh()
       }
@@ -120,7 +129,7 @@ export function FinalistSyncManager() {
                     </thead>
                     <tbody>
                       {result.details.map((d) => (
-                        <tr key={d.userId} className="border-b border-surface-light/50">
+                        <tr key={d.name} className="border-b border-surface-light/50">
                           <td className="py-2 px-2 text-white">{d.name}</td>
                           <td className="text-right py-2 px-2 font-mono">{d.matchPoints}</td>
                           <td className="text-right py-2 px-2 font-mono text-accent">
